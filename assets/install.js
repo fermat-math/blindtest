@@ -5,7 +5,7 @@
   if(standalone)return;
   var ua=navigator.userAgent,ios=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),android=/Android/.test(ua);
   if(!ios&&!android)return;
-  var KEY='fermat.install.hide';try{var t=+localStorage.getItem(KEY)||0;if(Date.now()-t<3*864e5)return}catch(e){}
+  var KEY='fermat.install.hide2';try{if(sessionStorage.getItem(KEY))return}catch(e){}
   var kakao=/KAKAOTALK/i.test(ua),inapp=kakao||/NAVER|Instagram|FBAN|FBAV|Line\//i.test(ua);
   var teacher=/teacher\.html/.test(location.pathname),appName=teacher?'페르마 선생님':'페르마 시험대비';
   var css='.fi-bar{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:9999;background:#13283b;color:#fff;border-radius:14px;padding:12px 12px 12px 14px;display:flex;gap:10px;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.25);font:14px/1.45 system-ui,sans-serif}'+
@@ -14,7 +14,7 @@
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
   function bar(html,btnText,onGo){var d=document.createElement('div');d.className='fi-bar';d.setAttribute('role','dialog');d.setAttribute('aria-label','앱 설치 안내');
     d.innerHTML='<img src="assets/icons/'+(teacher?'t':'s')+'-192.png" alt=""><div class="fi-t">'+html+'</div>'+(btnText?'<button class="fi-go" type="button">'+btnText+'</button>':'')+'<button class="fi-x" type="button" aria-label="닫기">✕</button>';
-    d.querySelector('.fi-x').onclick=function(){try{localStorage.setItem(KEY,Date.now())}catch(e){}d.remove()};
+    d.querySelector('.fi-x').onclick=function(){try{sessionStorage.setItem(KEY,'1')}catch(e){}d.remove()};
     if(btnText)d.querySelector('.fi-go').onclick=function(){onGo(d)};
     (document.body?Promise.resolve():new Promise(function(r){addEventListener('DOMContentLoaded',r)})).then(function(){document.body.appendChild(d)});return d}
   if(inapp){
