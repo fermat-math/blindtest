@@ -3,6 +3,7 @@
 # Usage: sh tools/build_all.sh state.json
 set -e
 cd "$(dirname "$0")/.."
+python3 tools/make_print_pdfs.py "$1"
 EP=$(node -e "try{console.log(require('./tools/config.json').endpoint||'')}catch(e){console.log('')}")
 node -e "const fs=require('fs');fs.writeFileSync('teacher.html',fs.readFileSync('tools/teacher-template.html','utf8').replace('__ENDPOINT__',process.argv[1]))" "$EP"
 node -e "

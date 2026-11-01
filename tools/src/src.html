@@ -274,6 +274,7 @@ body.noscroll{overflow:hidden}
 .nans b{font-family:var(--f-mono);font-weight:500;flex:none}
 .back{align-self:flex-start}
 @media (prefers-reduced-motion:no-preference){.verdict,.cert{animation:pop .25s ease-out}@keyframes pop{from{transform:scale(.98)}to{transform:none}}}
+.pdflink{color:#f4c84a;font-weight:700;text-decoration:underline;white-space:nowrap}
 </style>
 <main class="wrap" id="app"></main>
 <script type="application/json" id="state">__STATE__</script>
@@ -539,8 +540,8 @@ function renderExam(ex){
   const back=h(`<button class="btn ghost small back">← 시험 목록</button>`);back.onclick=()=>{sessEnd();if(STATE.hubLink){location.href=STATE.hubLink;return}view.exam=null;render()};app.appendChild(back);
   if(!pr.done)sessStart(ex);
   if(pr.done) return renderCert(ex,pr);
-  const lay=h(`<div class="exam-layout"><div class="exbar"><div style="min-width:0"><div class="exbar-t">${esc(ex.title)}</div><div class="hint">${esc(myName())} · ${ex.hashes.length}문항</div></div>${ex.images.length?`<button class="btn sheetbtn" id="opensheet" type="button">시험지 보기 <small>${ex.images.length}${ex.pageLabel?"문제":"쪽"}</small></button>`:''}</div>
-  <div class="sheetview" id="sheetview" hidden role="dialog" aria-modal="true" aria-label="시험지"><div class="sv-bar"><strong>${esc(ex.title)}</strong><span class="hint" id="svpage"></span><button class="btn" id="closesheet" type="button">답안지로 돌아가기</button></div><div class="sv-body"><div class="sheet-imgs"></div><p class="hint" style="text-align:center">두 손가락으로 벌리면 크게 볼 수 있어요.</p></div></div>
+  const lay=h(`<div class="exam-layout"><div class="exbar"><div style="min-width:0"><div class="exbar-t">${esc(ex.title)}</div><div class="hint">${esc(myName())} · ${ex.hashes.length}문항${ex.pdf?` · <a class="pdflink" href="${esc(ex.pdf)}" download="${esc(ex.title)}.pdf" target="_blank" rel="noopener">🖨 프린트용 PDF 받기</a>`:''}</div></div>${ex.images.length?`<button class="btn sheetbtn" id="opensheet" type="button">시험지 보기 <small>${ex.images.length}${ex.pageLabel?"문제":"쪽"}</small></button>`:''}</div>
+  <div class="sheetview" id="sheetview" hidden role="dialog" aria-modal="true" aria-label="시험지"><div class="sv-bar"><strong>${esc(ex.title)}</strong><span class="hint" id="svpage"></span>${ex.pdf?`<a class="btn ghost small" href="${esc(ex.pdf)}" download="${esc(ex.title)}.pdf" target="_blank" rel="noopener">PDF 받기</a>`:''}<button class="btn" id="closesheet" type="button">답안지로 돌아가기</button></div><div class="sv-body"><div class="sheet-imgs"></div><p class="hint" style="text-align:center">두 손가락으로 벌리면 크게 볼 수 있어요.</p></div></div>
   <section class="panel answers"><div class="row" style="justify-content:space-between"><span class="label">답안지</span>${ex.images.length?'':'<span class="hint">종이 시험지를 보고 답을 적어요</span>'}</div><div class="ans-grid"></div><div class="mkeys" id="mkeys" hidden></div><div id="vbox"></div><div class="rules" id="rules"><strong>채점 규칙</strong><span>다 맞을 때까지 몇 번이든 채점할 수 있지만, 틀리면 다음 채점까지 기다려야 해요.</span><div class="rsteps">${[1,2,3,4,5].map(n=>`<span><b>${n}차 후</b>${waitMin(n)}분</span>`).join('')}<span><b>그다음</b>5분씩 더</span></div><span>답 하나만 바꿔 보지 말고, 처음부터 다시 풀어서 한 번에 맞히는 게 가장 빨라요.</span></div><button class="btn" id="grade">채점하기</button><p class="hint" style="margin:0">객관식은 번호를 누르고, 주관식은 칸을 누르면 나오는 수식 버튼으로 분수·제곱·루트를 넣어요. 단위(cm, 개 등)는 안 써도 돼요. 시험지는 위의 <b>시험지 보기</b>로 언제든 열 수 있어요.</p></section></div>`);
   const imgs=lay.querySelector('.sheet-imgs');
   const perQ=ex.pageLabel==='문제';
