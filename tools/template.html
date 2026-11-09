@@ -297,14 +297,28 @@ async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncod
 const hashOf=(salt,i,v)=>sha(salt+':'+i+':'+norm(v));
 /* 주관식: 단위를 안 써도(또는 써도) 정답 처리 */
 const UNITS=['cm2','cm3','mm2','mm3','km2','m2','m3','cm','mm','km','kg','ml','m','g','l','%','°','도','개월','가지','시간','마리','송이','켤레','자루','조각','경기','개','명','번','회','원','배','장','쌍','권','살','분','초','점','일','년','쪽','줄','대','채','층','칸','곳','팀','통','병','잔','벌','시','주'];
+const UEQ={'도':['°'],'°':['도']};/* 같은 뜻의 단위 */
 function unitless(v){const n=norm(v);for(const u of UNITS)if(n.length>u.length&&n.endsWith(u)&&/[0-9π)\]}a-z]$/.test(n.slice(0,-u.length))&&!(/[a-z]$/.test(n.slice(0,-u.length))&&/^[a-z]/.test(u)))return n.slice(0,-u.length);return n}
 async function matchAns(ex,i,v){const hs=ex.hashes[i];const n=norm(v);if(!n)return null;
   const tryV=async c=>{const hv=await hashOf(ex.salt,i,c);const j=hs.indexOf(hv);return j<0?null:{v:c,j}};
   let r=await tryV(n);if(r)return r;
   const t=qtypes(ex)[i];if(t&&t!=='sa')return null;
-  const b=unitless(n);if(b!==n){r=await tryV(b);if(r)return r;return null}
-  for(const u of UNITS){r=await tryV(b+u);if(r)return r}
+  const b=unitless(n),u0=n.slice(b.length);
+  const uu=u0?[u0,...(UEQ[u0]||[])]:[];
+  if(b!==n){for(const c of [b,...uu.slice(1).map(u=>b+u)]){r=await tryV(c);if(r)return r}}else{for(const u of UNITS){r=await tryV(b+u);if(r)return r}}
+  for(const c of numVariants(b)){r=await tryV(c);if(r)return r;
+    if(u0){for(const u of uu){r=await tryV(c+u);if(r)return r}}else{for(const u of UNITS){r=await tryV(c+u);if(r)return r}}}
   return null}
+/* 분수↔소수: 33/2 ↔ 16.5 ↔ 2분의33 (소수는 기약분수로 바꿔 비교, 분수는 약분하지 않음) */
+function numVariants(b){let p,q,m;const neg=b.startsWith('-')?'-':'';const x=neg?b.slice(1):b;
+  if(m=x.match(/^(\d+)분의(\d+)$/)){q=+m[1];p=+m[2]}
+  else if(m=x.match(/^(\d+)\/(\d+)$/)){p=+m[1];q=+m[2]}
+  else if(m=x.match(/^(\d+)\.(\d+)$/)){q=10**m[2].length;p=+(m[1]+m[2])}
+  else return [];
+  if(!q)return [];const g=(a,c)=>c?g(c,a%c):a,d=g(p,q),rp=p/d,rq=q/d;const dec=x.includes('.');const out=new Set(dec?[`${rp}/${rq}`,`${rq}분의${rp}`]:[`${p}/${q}`,`${q}분의${p}`]);
+  let t=rq;while(t%2===0)t/=2;while(t%5===0)t/=5;
+  if(t===1){let k=0,z=rq;while(z>1){z/=10;k++}out.add((rp/rq).toFixed(Math.max(k,1)).replace(/0+$/,'').replace(/\.$/,''))}
+  return [...out].map(v=>neg+v).filter(v=>v!==b)}
 function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
 const h=(html)=>{const d=document.createElement('div');d.innerHTML=html;return d.firstElementChild};
 const myName=()=>prog._me?prog._me.name:(prog._name||'');
