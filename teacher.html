@@ -122,6 +122,12 @@ th,td{text-align:left;padding:7px 8px;border-top:1px solid var(--line);vertical-
 .rbtns{display:flex;gap:4px;flex-wrap:nowrap}.kbtn{background:#fee500!important;color:#191600!important;border-color:#fee500!important}
 .wtabs{display:flex;gap:4px;border-bottom:2px solid var(--line,#e3e8ee);margin:2px 0 4px}.wtabs button{font:inherit;font-weight:700;background:none;border:0;padding:9px 14px;color:#6b7785;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}.wtabs button[aria-selected="true"]{color:#13283b;border-bottom-color:#00abff}
 [hidden]{display:none!important}
+.qc i{font-style:normal;font-weight:700;color:#c0392b;margin-left:3px}.qc[aria-pressed="true"] i{color:#fff}
+.wq-ah{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}.ah{background:#fdecea;border-radius:999px;padding:1px 8px}.ah s{color:#c0392b;font-weight:700}.ah small{color:#777}
+.lvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,360px),1fr));gap:10px}
+.lvc{border:1px solid var(--line,#e3e8ee);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--paper,#f7f9fb)}.lvc-h{font-weight:700;font-size:15px}
+.lvrow{display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--line,#e3e8ee);padding-top:8px}.lvc-h+.lvrow{border-top:0;padding-top:0}.lvwho{display:flex;flex-direction:column}
+
 .nowrow{border:1px solid var(--line,#e3e8ee);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}.nowname{font-size:16px;padding:2px 6px}
 .nowex{display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--line,#e3e8ee);padding-top:8px}.nowex:first-of-type{border-top:0;padding-top:0}.nowt{display:flex;flex-direction:column;gap:2px}
 .cq{display:flex;flex-wrap:wrap;gap:6px}.qc{font:inherit;font-weight:700;font-size:14px;min-width:52px;padding:6px 10px;border-radius:8px;border:1.5px solid #ff8a00;background:#fff3e6;color:#9a4f00;cursor:pointer}.qc[aria-pressed="true"]{background:#ff8a00;color:#fff}
@@ -471,21 +477,26 @@ const ago=t=>{const m=Math.round((Date.now()-t)/60000);return m<1?'방금':m<60?
 function currentOf(c,n){
   const rows=DATA.rows.filter(r=>r.ev!=='note'&&String(r.cls)===String(c)&&String(r.name)===String(n)).sort((a,b)=>a.at-b.at);
   const ex={};
-  rows.forEach(r=>{if(!r.examId)return;const e=ex[r.examId]||(ex[r.examId]={id:r.examId,title:r.examTitle,total:Number(r.total)||0,last:r.at,first:r.at,done:false,att:0,now:null,hist:{}});
+  rows.forEach(r=>{if(!r.examId)return;const e=ex[r.examId]||(ex[r.examId]={id:r.examId,title:r.examTitle,total:Number(r.total)||0,last:r.at,first:r.at,done:false,att:0,now:null,hist:{},ans:{}});
     e.last=Math.max(e.last,r.at);if(Number(r.total))e.total=Number(r.total);
     if(r.ev==='done')e.done=true;
     if(r.ev==='attempt'){const a=Number(r.attempt)||0;const ws=String(r.wrong||'').split(',').map(x=>parseInt(x,10)).filter(Boolean);
       ws.forEach(q=>{const H=e.hist[q]=e.hist[q]||[];if(!H.includes(a))H.push(a)});
+      const X=J(r.extra);if(X&&X.a)Object.entries(X.a).forEach(([q,v])=>{((e.ans=e.ans||{})[q]=e.ans[q]||{})[a]=v});
       if(a>=e.att){e.att=a;e.now=ws;e.nowAt=r.at;e.nowCount=r.wrongCount===''||r.wrongCount==null?ws.length:Number(r.wrongCount)}}});
   return Object.values(ex).filter(e=>!e.done).sort((a,b)=>b.last-a.last);
 }
+const ansNow=(e,q)=>{const A=(e.ans||{})[q];return A&&A[e.att]!=null?String(A[e.att]):''};
+function ansHist(e,q){const A=(e.ans||{})[q]||{},rs=(e.hist[q]||[]).slice().sort((a,b)=>a-b);
+  return rs.map(r=>`<span class="ah"><small>${r}차</small> <s>${A[r]!=null&&A[r]!==''?esc(A[r]):'?'}</s></span>`).join('')}
+function wrongBody(e,q){return `<div class="wq-s">${(e.hist[q]||[]).slice().sort((a,b)=>a-b).join('·')}차에 틀림 · 아직 못 고침</div><div class="wq-ah"><span class="hint">학생이 쓴 답</span>${ansHist(e,q)}</div>`}
 function qChips(e){if(!e.att)return '<span class="hint">아직 채점 전이에요</span>';
   if(!e.now||!e.now.length)return `<span class="hint">틀린 문제 ${e.nowCount||0}개 (번호 기록 없음)</span>`;
-  return `<span class="cq">${e.now.map(q=>`<button type="button" class="qc" data-q="${q}">${q}번</button>`).join('')}</span>`}
+  return `<span class="cq">${e.now.map(q=>{const v=ansNow(e,q);return `<button type="button" class="qc" data-q="${q}">${q}번${v?` <i>${esc(v)}</i>`:''}</button>`}).join('')}</span>`}
 function curLine(e){return `<b>${esc(e.title)}</b><span class="hint">${e.att?`${e.att}차 채점 · 지금 틀린 문제 <b class="wq-c">${e.now?e.now.length:e.nowCount||0}</b>개${e.total?' / '+e.total+'문제':''}`:'시작만 했어요'} · 마지막 ${ago(e.last)}</span>`}
 function bindQc(box,CC,getE){box.addEventListener('click',ev=>{const b=ev.target.closest('.qc');if(!b)return;const holder=b.closest('[data-ex]');const e=getE(holder);const q=+b.dataset.q;
   const v=holder.querySelector('.qview');const open=b.getAttribute('aria-pressed')==='true';holder.querySelectorAll('.qc').forEach(x=>x.setAttribute('aria-pressed','false'));
-  if(open){v.innerHTML='';return}b.setAttribute('aria-pressed','true');v.innerHTML=wrongCard(e.id,q,CC,`<div class="wq-s">${(e.hist[q]||[]).sort((a,b)=>a-b).join('·')}차에 틀림 · 아직 못 고침</div>`)})}
+  if(open){v.innerHTML='';return}b.setAttribute('aria-pressed','true');v.innerHTML=wrongCard(e.id,q,CC,wrongBody(e,q));if(box.onQopen)box.onQopen(holder.dataset.ex+'|'+q)})}
 function buildClassNow(panel,mem,CC){
   const list=mem.map(r=>({r,cur:currentOf(r.cls,r.name)}));const busy=list.filter(x=>x.cur.length),idle=list.filter(x=>!x.cur.length);
   busy.sort((a,b)=>b.cur[0].last-a.cur[0].last);
@@ -503,7 +514,7 @@ function buildStudentNow(panel,c,n,CC){
   if(!cur.length){panel.innerHTML='<p class="hint">지금 풀고 있는 시험이 없어요. (시작한 시험은 모두 통과했어요)</p>';return}
   cur.forEach(e=>{const fixed=Object.keys(e.hist).map(Number).filter(q=>!(e.now||[]).includes(q)).sort((a,b)=>a-b);
     const sec=h(`<section class="wsec"><div class="nowt">${curLine(e)}</div>${fixed.length?`<p class="hint" style="margin:4px 0 0">고친 문제: ${fixed.map(q=>q+'번').join(', ')}</p>`:''}<div class="wqgrid"></div></section>`);
-    sec.querySelector('.wqgrid').innerHTML=e.att?(e.now&&e.now.length?e.now.map(q=>wrongCard(e.id,q,CC,`<div class="wq-s">${(e.hist[q]||[]).sort((a,b)=>a-b).join('·')}차에 틀림 · 아직 못 고침</div>`)).join(''):'<p class="hint">틀린 문제 번호 기록이 없어요.</p>'):'<p class="hint">아직 한 번도 채점하지 않았어요.</p>';
+    sec.querySelector('.wqgrid').innerHTML=e.att?(e.now&&e.now.length?e.now.map(q=>wrongCard(e.id,q,CC,wrongBody(e,q))).join(''):'<p class="hint">틀린 문제 번호 기록이 없어요.</p>'):'<p class="hint">아직 한 번도 채점하지 않았어요.</p>';
     panel.appendChild(sec)})}
 function studentRecord(c,n){
   const rows=DATA.rows.filter(r=>r.ev!=='note'&&String(r.cls)===String(c)&&String(r.name)===String(n)&&inRange(r.at)).sort((a,b)=>a.at-b.at);
@@ -669,12 +680,28 @@ async function poll(){if(!DATA)return;
   }catch(e){}}
 document.addEventListener('pointerdown',()=>{try{audioCtx&&audioCtx.resume()}catch(e){}},{passive:true});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){unread=0;document.title='블라인드 테스트 학습 기록'}});
+let liveOpen=ls.get('dabogi.t.lvopen','');
+function liveNow(){
+  const CC=CONCEPTS||{};const box=h(`<div class="lvnow"></div>`);
+  const classes=[...new Set(DATA.roster.map(r=>r.cls))];const map={};let cnt=0;
+  const parts=classes.map(c=>{const list=DATA.roster.filter(r=>r.cls===c).map(r=>({r,cur:currentOf(r.cls,r.name).filter(e=>isToday(e.last))})).filter(x=>x.cur.length).sort((a,b)=>b.cur[0].last-a.cur[0].last);
+    if(!list.length)return '';cnt+=list.length;
+    return `<div class="lvc"><div class="lvc-h">${esc(c)} <span class="hint">${list.length}명 푸는 중</span></div>${list.map(({r,cur})=>cur.map(e=>{const k=r.cls+'|'+r.name+'|'+e.id;map[k]=e;
+      return `<div class="lvrow" data-ex="${esc(k)}"><div class="lvwho"><b>${esc(r.name)}</b><span class="hint">${esc(e.title)} · ${e.att?e.att+'차 채점 · 틀린 '+(e.now?e.now.length:e.nowCount||0)+'개':'채점 전'} · ${ago(e.last)}</span></div>${e.att?qChips(e):''}<div class="qview"></div></div>`}).join('')).join('')}</div>`}).join('');
+  box.innerHTML=`<div class="label" style="margin-top:8px">지금 푸는 중 (오늘) · 틀린 문제와 학생이 쓴 답</div>${cnt?`<div class="lvgrid">${parts}</div><p class="hint" style="margin:2px 0 0">문제 번호 옆은 학생이 마지막 채점에서 쓴 답이에요. 번호를 누르면 문제 그림과 회차별 답이 나와요.</p>`:'<span class="hint">오늘 시험을 풀고 있는 학생이 없어요.</span>'}`;
+  box.onQopen=k=>{liveOpen=k;ls.set('dabogi.t.lvopen',k)};
+  box.addEventListener('click',ev=>{const b=ev.target.closest('.qc');if(b&&b.getAttribute('aria-pressed')==='true'){liveOpen='';ls.set('dabogi.t.lvopen','')}},true);
+  bindQc(box,CC,el=>map[el.dataset.ex]);
+  if(liveOpen){const i=liveOpen.lastIndexOf('|'),k=liveOpen.slice(0,i),q=liveOpen.slice(i+1);const row=[...box.querySelectorAll('.lvrow')].find(x=>x.dataset.ex===k);const b=row&&row.querySelector(`.qc[data-q="${q}"]`);if(b)b.click()}
+  if(!CONCEPTS)getConcepts().then(()=>{if(document.getElementById('live'))renderLive()});
+  return box}
 function renderLive(){const el=document.getElementById('live');if(!el)return;
   const notif='Notification' in window?Notification.permission:'unsupported';
   el.innerHTML=`<div class="row" style="justify-content:space-between"><div><span class="dot-live"></span><strong>실시간 알림 켜짐</strong> <span class="hint">20초마다 확인 · 마지막 확인 <span class="lv-time">${hm(Date.now())}</span></span></div>
     <div class="row" style="gap:6px">${pending?'<button class="btn small" id="lvnew">새 기록 반영하기</button>':''}<label class="row hint" style="gap:4px"><input type="checkbox" id="lvsound" style="width:auto" ${ls.get('dabogi.t.sound','1')==='1'?'checked':''}> 소리</label>${notif==='default'?'<button class="btn ghost small" id="lvperm">컴퓨터 알림도 받기</button>':notif==='denied'?'<span class="hint">컴퓨터 알림이 브라우저에서 막혀 있어요</span>':''}</div></div>
     <div class="label" style="margin-top:6px">오늘 통과한 학생 ${passed.filter(p=>isToday(p.at)).length}명</div>
     <div class="passlist">${passed.filter(p=>isToday(p.at)).map(p=>`<span class="pchip"><b>${esc(p.name)}</b> ${esc(p.cls)} · ${hm(p.at)} · ${p.attempt}회</span>`).join('')||'<span class="hint">아직 없어요. 학생이 통과하면 여기에 바로 나타나요.</span>'}</div>`;
+  el.appendChild(liveNow());
   const nb=el.querySelector('#lvnew');if(nb)nb.onclick=()=>{pending=false;renderMain()};
   el.querySelector('#lvsound').onchange=e=>{ls.set('dabogi.t.sound',e.target.checked?'1':'0');if(e.target.checked){try{audioCtx&&audioCtx.resume()}catch(_){}chime()}};
   const pb=el.querySelector('#lvperm');if(pb)pb.onclick=async()=>{try{await Notification.requestPermission()}catch(e){}renderLive()};

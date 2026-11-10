@@ -609,7 +609,7 @@ function renderExam(ex){
     const wrong=[];for(let i=0;i<ex.hashes.length;i++){if(!await matchAns(ex,i,pr.answers[i]))wrong.push(i)}
     const at={w:wrong,a:Object.fromEntries(wrong.map(i=>[i,pr.answers[i]])),t:Date.now(),s:runSec()};pr.attempts.push(at);pr.spent=at.s;
     logEv(wrong.length?'attempt':'done',ex,{attempt:pr.attempts.length,wrong:wrong.map(i=>qn(ex,i)).join(','),wrongCount:wrong.length,
-      extra:wrong.length?'':JSON.stringify({runSec:at.s,startedAt:pr.start,attempts:pr.attempts.map(a=>({t:a.t,s:a.s,w:a.w.map(i=>qn(ex,i))}))})});
+      extra:wrong.length?JSON.stringify({a:Object.fromEntries(wrong.map(i=>[qn(ex,i),types[i]!=='sa'?String(pr.answers[i]).split(',').map(n=>CIRC[+n]||n).join(''):String(pr.answers[i]).slice(0,40)]))}).slice(0,1990):JSON.stringify({runSec:at.s,startedAt:pr.start,attempts:pr.attempts.map(a=>({t:a.t,s:a.s,w:a.w.map(i=>qn(ex,i))}))})});
     if(!wrong.length){pr.done=Date.now();saveProg();sessEnd();render();scrollTo(0,0);return}
     pr.checked=[];saveProg();lay.querySelector('#rules').hidden=true;showVerdict(ex,pr,vbox,gbtn,grid,at);
   };
