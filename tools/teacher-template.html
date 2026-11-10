@@ -138,6 +138,7 @@ th,td{text-align:left;padding:7px 8px;border-top:1px solid var(--line);vertical-
 .wq-h{display:flex;gap:8px;align-items:center}.wq-n{flex:none;background:#ff8a00;color:#fff;font-weight:700;font-size:13px;border-radius:6px;padding:2px 8px}.wq-h b{font-size:14px}
 .wq-s{font-size:13px;color:#555}.wq-c{color:#e57a00;font-size:16px}.wq-who{display:flex;flex-wrap:wrap;gap:4px}.wq-who span{background:#fff3e6;color:#9a4f00;border-radius:999px;padding:2px 8px;font-size:12px}.wq-who small{opacity:.75}
 .wq-r{font-size:13px;border-top:1px dashed #eee;padding-top:5px}.wq-r s{color:#c0392b;font-weight:700}.wq-r em{font-style:normal;font-size:11px;font-weight:700;color:#c0392b;background:#fdecea;border-radius:999px;padding:1px 7px;margin-left:6px}.wq-r p{margin:2px 0 0;color:#444}
+.lvtoday{color:#e8590c}
 </style>
 </head>
 <body>
@@ -213,7 +214,7 @@ const canvasJpeg=cv=>{const d=atob(cv.toDataURL('image/jpeg',.88).split(',')[1])
 function saveBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}
 const loadImg=src=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=src});
 function decSel(s){const out=[];String(s||'').split('|').forEach(g=>{const[k,ns]=g.split(':');if(k&&ns)ns.split('.').forEach(n=>out.push(k+':'+n))});return out}
-function notesOf(c,n){return DATA.rows.filter(r=>r.ev==='note'&&String(r.cls)===String(c)&&String(r.name)===String(n)).map(r=>{const x=J(r.extra)||{};const bt=String(x.bt||'').split('|').filter(Boolean).map(t=>{const i=t.indexOf('=');const[e,q]=t.slice(0,i).split(':');return {e,q:+q,a:t.slice(i+1)}}).filter(b=>b.e&&b.q);return {at:r.at,book:x.b||r.examId,title:r.examTitle,keys:decSel(x.s),bt}}).sort((a,b)=>b.at-a.at)}
+function notesOf(c,n){return DATA.rows.filter(r=>r.ev==='note'&&String(r.cls).trim()===String(c).trim()&&String(r.name).trim()===String(n).trim()).map(r=>{const x=J(r.extra)||{};const bt=String(x.bt||'').split('|').filter(Boolean).map(t=>{const i=t.indexOf('=');const[e,q]=t.slice(0,i).split(':');return {e,q:+q,a:t.slice(i+1)}}).filter(b=>b.e&&b.q);return {at:r.at,book:x.b||r.examId,title:r.examTitle,keys:decSel(x.s),bt}}).sort((a,b)=>b.at-a.at)}
 function ansText(a){return String(a||'').replace(/\{([^}]+)\}/g,'$1')}
 async function makeNotePdf(c,n,note,btn,mode){
   const WANT_Q=mode!=='a',WANT_A=mode!=='q';
@@ -475,7 +476,7 @@ function buildClassWrong(panel,mem,recs,CC){
 /* ---------- 지금 푸는 시험 (기간과 상관없이 아직 통과 못 한 시험) ---------- */
 const ago=t=>{const m=Math.round((Date.now()-t)/60000);return m<1?'방금':m<60?m+'분 전':m<1440?Math.floor(m/60)+'시간 전':Math.floor(m/1440)+'일 전'};
 function currentOf(c,n){
-  const rows=DATA.rows.filter(r=>r.ev!=='note'&&String(r.cls)===String(c)&&String(r.name)===String(n)).sort((a,b)=>a.at-b.at);
+  const rows=DATA.rows.filter(r=>r.ev!=='note'&&String(r.cls).trim()===String(c).trim()&&String(r.name).trim()===String(n).trim()).sort((a,b)=>a.at-b.at);
   const ex={};
   rows.forEach(r=>{if(!r.examId)return;const e=ex[r.examId]||(ex[r.examId]={id:r.examId,title:r.examTitle,total:Number(r.total)||0,last:r.at,first:r.at,done:false,att:0,now:null,hist:{},ans:{}});
     e.last=Math.max(e.last,r.at);if(Number(r.total))e.total=Number(r.total);
@@ -517,7 +518,7 @@ function buildStudentNow(panel,c,n,CC){
     sec.querySelector('.wqgrid').innerHTML=e.att?(e.now&&e.now.length?e.now.map(q=>wrongCard(e.id,q,CC,wrongBody(e,q))).join(''):'<p class="hint">틀린 문제 번호 기록이 없어요.</p>'):'<p class="hint">아직 한 번도 채점하지 않았어요.</p>';
     panel.appendChild(sec)})}
 function studentRecord(c,n){
-  const rows=DATA.rows.filter(r=>r.ev!=='note'&&String(r.cls)===String(c)&&String(r.name)===String(n)&&inRange(r.at)).sort((a,b)=>a.at-b.at);
+  const rows=DATA.rows.filter(r=>r.ev!=='note'&&String(r.cls).trim()===String(c).trim()&&String(r.name).trim()===String(n).trim()&&inRange(r.at)).sort((a,b)=>a.at-b.at);
   const sess={};
   rows.forEach(r=>{const k=r.session||('x'+r.at);const s=sess[k]||(sess[k]={id:k,start:r.at,end:r.at,active:0,exam:r.examTitle,examId:r.examId,events:[]});
     s.start=Math.min(s.start,r.at);s.end=Math.max(s.end,r.at);s.active=Math.max(s.active,Number(r.activeSec)||0);s.events.push(r)});
@@ -684,11 +685,17 @@ let liveOpen=ls.get('dabogi.t.lvopen','');
 function liveNow(){
   const CC=CONCEPTS||{};const box=h(`<div class="lvnow"></div>`);
   const classes=[...new Set(DATA.roster.map(r=>r.cls))];const map={};let cnt=0;
-  const parts=classes.map(c=>{const list=DATA.roster.filter(r=>r.cls===c).map(r=>({r,cur:currentOf(r.cls,r.name).filter(e=>isToday(e.last))})).filter(x=>x.cur.length).sort((a,b)=>b.cur[0].last-a.cur[0].last);
+  /* 오늘만이 아니라 아직 통과 못 한 시험은 모두 보여준다. 명단과 이름이 안 맞는 기록도 따로 모은다 */
+  const inRoster=new Set(DATA.roster.map(r=>String(r.cls).trim()+'|'+String(r.name).trim()));
+  const extra={};DATA.rows.forEach(x=>{if(x.ev==='note'||!x.examId)return;const k=String(x.cls).trim()+'|'+String(x.name).trim();if(!inRoster.has(k))extra[k]={cls:x.cls,name:x.name}});
+  const extraList=Object.values(extra).map(r=>({r,cur:currentOf(r.cls,r.name)})).filter(x=>x.cur.length);
+  const parts=classes.map(c=>{const list=DATA.roster.filter(r=>r.cls===c).map(r=>({r,cur:currentOf(r.cls,r.name)})).filter(x=>x.cur.length).sort((a,b)=>b.cur[0].last-a.cur[0].last);
     if(!list.length)return '';cnt+=list.length;
     return `<div class="lvc"><div class="lvc-h">${esc(c)} <span class="hint">${list.length}명 푸는 중</span></div>${list.map(({r,cur})=>cur.map(e=>{const k=r.cls+'|'+r.name+'|'+e.id;map[k]=e;
-      return `<div class="lvrow" data-ex="${esc(k)}"><div class="lvwho"><b>${esc(r.name)}</b><span class="hint">${esc(e.title)} · ${e.att?e.att+'차 채점 · 틀린 '+(e.now?e.now.length:e.nowCount||0)+'개':'채점 전'} · ${ago(e.last)}</span></div>${e.att?qChips(e):''}<div class="qview"></div></div>`}).join('')).join('')}</div>`}).join('');
-  box.innerHTML=`<div class="label" style="margin-top:8px">지금 푸는 중 (오늘) · 틀린 문제와 학생이 쓴 답</div>${cnt?`<div class="lvgrid">${parts}</div><p class="hint" style="margin:2px 0 0">문제 번호 옆은 학생이 마지막 채점에서 쓴 답이에요. 번호를 누르면 문제 그림과 회차별 답이 나와요.</p>`:'<span class="hint">오늘 시험을 풀고 있는 학생이 없어요.</span>'}`;
+      return `<div class="lvrow" data-ex="${esc(k)}"><div class="lvwho"><b>${esc(r.name)}</b><span class="hint">${esc(e.title)} · ${e.att?e.att+'차 채점 · 틀린 '+(e.now?e.now.length:e.nowCount||0)+'개':'채점 전'} · ${isToday(e.last)?'<b class="lvtoday">오늘</b> ':''}${ago(e.last)}</span></div>${e.att?qChips(e):''}<div class="qview"></div></div>`}).join('')).join('')}</div>`}).join('');
+  let ex2='';if(extraList.length){cnt+=extraList.length;ex2=`<div class="lvc"><div class="lvc-h">명단에 없는 이름 <span class="hint">반·이름이 명단 시트와 달라요 (띄어쓰기, 반 이름 확인)</span></div>${extraList.map(({r,cur})=>cur.map(e=>{const k=r.cls+'|'+r.name+'|'+e.id;map[k]=e;
+      return `<div class="lvrow" data-ex="${esc(k)}"><div class="lvwho"><b>${esc(r.name)}</b><span class="hint">${esc(r.cls)} · ${esc(e.title)} · ${e.att?e.att+'차 채점 · 틀린 '+(e.now?e.now.length:e.nowCount||0)+'개':'채점 전'} · ${ago(e.last)}</span></div>${e.att?qChips(e):''}<div class="qview"></div></div>`}).join('')).join('')}</div>`}
+  box.innerHTML=`<div class="label" style="margin-top:8px">아직 통과 못 한 학생 · 틀린 문제와 학생이 쓴 답</div>${cnt?`<div class="lvgrid">${parts}${ex2}</div><p class="hint" style="margin:2px 0 0">문제 번호 옆은 학생이 마지막 채점에서 쓴 답이에요. 번호를 누르면 문제 그림과 회차별 답이 나와요.</p>`:'<span class="hint">아직 통과 못 한 시험이 있는 학생이 없어요.</span>'}`;
   box.onQopen=k=>{liveOpen=k;ls.set('dabogi.t.lvopen',k)};
   box.addEventListener('click',ev=>{const b=ev.target.closest('.qc');if(b&&b.getAttribute('aria-pressed')==='true'){liveOpen='';ls.set('dabogi.t.lvopen','')}},true);
   bindQc(box,CC,el=>map[el.dataset.ex]);
