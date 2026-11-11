@@ -47,6 +47,25 @@ svg{width:100%;height:auto;display:block}
 .tally{display:flex;flex-direction:column;gap:6px}.tr{display:grid;grid-template-columns:90px 1fr 34px;gap:8px;align-items:center;font-size:13px}.tr i{display:block;height:10px;border-radius:5px;background:var(--blue)}.tr .bar{background:#eef1f4;border-radius:5px}
 .foot{text-align:center;font-size:12px;color:#888;margin-top:16px}.foot a{display:inline-block;margin-top:8px;background:#13283b;color:#fff;text-decoration:none;border-radius:10px;padding:10px 16px;font-weight:700;font-size:14px}
 .err{text-align:center;padding:40px 16px;color:#666}
+.pbtn{display:inline-block;margin:8px 0 0 6px;background:#fff;color:#13283b;border:1px solid #13283b;border-radius:10px;padding:9px 14px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+@media print{
+  @page{size:A4;margin:10mm}
+  html,body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{padding:0;font-size:13px}
+  .wrap{max-width:none;padding:0}
+  .card{box-shadow:none;border:1px solid #e3e6ea;border-radius:10px;margin-top:5mm;padding:12px 14px;overflow:visible;break-inside:avoid}
+  .card:first-child{margin-top:0}
+  .strip{margin:-12px -14px 10px}
+  .card.long{break-inside:auto}
+  .big{font-size:48px;margin:8px 0;background:none!important;color:#1a86d6!important;-webkit-text-fill-color:#1a86d6}
+  .stamp{top:78px}
+  .tr{grid-template-columns:130px 1fr 40px}
+  h2{break-after:avoid}
+  .w,.round,.tr,.grid{break-inside:avoid}
+  svg{max-height:60mm;width:auto;margin:0 auto}
+  .foot a,.pbtn{display:none}
+  .foot{margin-top:6mm}
+}
 </style>
 </head>
 <body>
@@ -98,10 +117,10 @@ app.innerHTML=`
   <div class="rounds">${att.map((a,i)=>`<div class="round"><b>${i+1}차</b><span class="tm">${tm(a.t)}</span><span class="tags">${a.w.length?a.w.map(q=>`<span class="tag">${q}번</span>`).join(''):'<span class="tag ok">모두 정답</span>'}</span></div>`).join('')}</div>
 </div>
 ${tk.length?`<div class="card"><h2>실수 유형</h2><div class="tally">${tk.map(([k,v])=>`<div class="tr"><span>${esc(k)}</span><span class="bar"><i style="width:${Math.round(v/tk[0][1]*100)}%"></i></span><b>${v}번</b></div>`).join('')}</div></div>`:''}
-${ever.length?`<div class="card"><h2>틀렸던 문제와 이유</h2>${ever.map(q=>{const x=(D.w||{})[q]||{};return `<div class="w"><div class="w-h"><span class="n">${q}번</span><b>${esc(cn(q))}</b></div>
+${ever.length?`<div class="card long"><h2>틀렸던 문제와 이유</h2>${ever.map(q=>{const x=(D.w||{})[q]||{};return `<div class="w"><div class="w-h"><span class="n">${q}번</span><b>${esc(cn(q))}</b></div>
   ${(x.r||[]).map(r=>`<div class="r"><div class="h">${r[0]}차 · 내 답 <s>${esc(r[1]||'빈칸')}</s>${r[2]?`<span class="ty">${esc(r[2])}</span>`:''}</div>${r[3]?`<p>${esc(r[3])}</p>`:''}</div>`).join('')||`<div class="r"><p>${(()=>{const rs=[];att.forEach((a,i)=>{if(a.w.includes(q))rs.push(i+1)});return rs.join('·')+'차에 틀렸다가 '+(rs[rs.length-1]+1)+'차에 고쳤어요.'})()}</p></div>`}
   ${x.tp?`<div class="tip"><b>다음에 검토할 때</b>${esc(x.tp)}</div>`:''}</div>`}).join('')}</div>`:''}
-<div class="foot">페르마 수학학원 · 블라인드 테스트<br>틀린 개수를 알려 주지 않고, 스스로 처음부터 다시 검토해서 모두 맞힐 때까지 푸는 방식이에요.<br><a href="./">시험 대비 열기</a></div>`;
+<div class="foot">페르마 수학학원 · 블라인드 테스트<br>틀린 개수를 알려 주지 않고, 스스로 처음부터 다시 검토해서 모두 맞힐 때까지 푸는 방식이에요.<br><a href="./">시험 대비 열기</a><button type="button" class="pbtn" onclick="print()">🖨 인쇄하기</button></div>`;
 })();
 </script>
 </body>
