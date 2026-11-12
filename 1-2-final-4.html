@@ -253,7 +253,7 @@ body.noscroll{overflow:hidden}
 .maintabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:5px;border-radius:14px;background:var(--sheet);border:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:9}
 .maintabs button{font:inherit;font-weight:700;font-size:16px;padding:12px 8px;border:0;border-radius:10px;background:none;color:var(--muted);cursor:pointer}
 .maintabs button[aria-selected="true"]{background:var(--band);color:var(--band-ink)}
-.maintabs .mtlink{font-weight:700;font-size:16px;padding:12px 8px;border-radius:10px;color:var(--muted);text-decoration:none;text-align:center}
+@media (max-width:480px){.maintabs button{font-size:14px;padding:11px 4px;white-space:nowrap;letter-spacing:-.3px}}
 .sets{display:flex;flex-direction:column;gap:8px}
 .nset{border:1px solid var(--line);border-radius:10px;background:var(--paper)}
 .nset summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;cursor:pointer;font-weight:700;list-style:none}
@@ -389,15 +389,19 @@ function render(){
   if(view.mode==='teacher') return renderTeacher();
   if(!view.exam&&!autoOpened&&STATE.studentOnly&&!STATE.hub&&STATE.exams.length===1&&prog._me){autoOpened=true;view.exam=STATE.exams[0].id}
   if(view.exam) return renderExam(STATE.exams.find(x=>x.id===view.exam));
-  if(STATE.hub){const tb=h(`<nav class="maintabs" role="tablist"><button role="tab" data-t="blind" aria-selected="${TAB==='blind'}">블라인드 테스트</button><button role="tab" data-t="notes" aria-selected="${TAB==='notes'}">오답노트</button><a class="mtlink" href="study/">⏱ 순공 타이머</a></nav>`);
+  if(STATE.hub){const tb=h(`<nav class="maintabs" role="tablist"><button role="tab" data-t="blind" aria-selected="${TAB==='blind'}">블라인드 테스트</button><button role="tab" data-t="notes" aria-selected="${TAB==='notes'}">오답노트</button><button role="tab" data-t="study" aria-selected="${TAB==='study'}">순공 타이머</button></nav>`);
     tb.onclick=e=>{const t=e.target.closest('button');if(t&&t.dataset.t!==TAB)setTab(t.dataset.t)};app.appendChild(tb);
     if(TAB==='notes'){if(PICK&&!(noteView&&noteView.note))renderWho();return renderNotes()}
+    if(TAB==='study'){renderWho();
+      if(prog._me){const p=h(`<section class="panel" style="text-align:center"><h2 style="margin:4px 0">⏱ 순공 타이머</h2><p class="hint">공부할 때 켜 두면 순수 공부시간만 기록돼요.</p><a class="btn" href="study/" style="display:inline-block;text-decoration:none;padding:14px 26px;font-size:17px">${esc(prog._me.name)} 타이머 열기</a></section>`);app.appendChild(p)}
+      else app.appendChild(h(`<p class="hint tabhint">반과 이름을 고르면 순공 타이머를 쓸 수 있어요.</p>`));
+      return}
     app.appendChild(h(`<p class="hint tabhint">몇 번이 틀렸는지는 가려져 있어요. 다 맞을 때까지 처음부터 다시 보면서 스스로 찾아요.</p>`))}
   renderHome();
 }
 
 /* ---------- 오답노트 (시험 대비 첫 화면의 두 번째 탭) ---------- */
-let TAB=(()=>{const h=location.hash.replace('#','');if(h==='notes'||h==='blind')return h;try{return localStorage.getItem('dabogi.tab')||'blind'}catch(e){return 'blind'}})();
+let TAB=(()=>{const h=location.hash.replace('#','');if(h==='notes'||h==='blind'||h==='study')return h;try{return localStorage.getItem('dabogi.tab')||'blind'}catch(e){return 'blind'}})();
 let BOOKS=null,booksErr=false,noteView=null;
 function setTab(t){TAB=t;try{localStorage.setItem('dabogi.tab',t)}catch(e){}noteView=null;render();scrollTo(0,0)}
 async function loadBooks(){if(BOOKS||booksErr)return;try{BOOKS=(await(await fetch('notes/books.json?v='+(STATE.v||''))).json()).books}catch(e){booksErr=true}render()}

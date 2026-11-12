@@ -177,13 +177,25 @@ function loginView(){
   <p class="tip">이름이 없으면 선생님께 말씀해 주세요.</p></div>`}
 function bindLogin(){
   document.querySelectorAll('[data-cls]').forEach(b=>b.onclick=()=>{pickCls=b.dataset.cls;render()});
-  document.querySelectorAll('[data-nm]').forEach(b=>b.onclick=()=>{const n=b.dataset.nm;if(!confirm(`${pickCls} ${n} 맞나요?`))return;S.me={cls:pickCls,name:n};save();render();sync();fetchRank()});
+  document.querySelectorAll('[data-nm]').forEach(b=>b.onclick=()=>{const n=b.dataset.nm;if(!confirm(`${pickCls} ${n} 맞나요?`))return;const me={cls:pickCls,name:n};S.me=null;switchUser(me);
+    /* 블라인드 테스트에도 같은 이름으로 로그인 */
+    try{const d=JSON.parse(localStorage.getItem('dabogi.v1')||'{}');if(!d._me){d._me=me;localStorage.setItem('dabogi.v1',JSON.stringify(d))}}catch(e){}
+    render();sync();fetchRank()});
 }
-/* 블라인드 테스트에서 이미 이름을 골랐으면 그대로 써요 */
-if(!S.me){try{const b=JSON.parse(localStorage.getItem('dabogi.v1')||'{}');if(b._me&&b._me.name){S.me={cls:b._me.cls,name:b._me.name};save()}}catch(e){}}
+/* 학생마다 기록을 따로 보관해요 (한 휴대폰을 여러 학생이 써도 섞이지 않게) */
+const ukey=m=>m?m.cls+'|'+m.name:'';
+function switchUser(me){
+  if(S.me&&ukey(S.me)===ukey(me))return;
+  if(S.me){try{localStorage.setItem(KEY+'|'+ukey(S.me),JSON.stringify(S))}catch(e){}}
+  let n=null;try{n=JSON.parse(localStorage.getItem(KEY+'|'+ukey(me)))}catch(e){}
+  S=n||{sessions:[],unsent:[],subj:'수학'};S.sessions=S.sessions||[];S.unsent=S.unsent||[];S.me=me;save();
+}
+function hubMe(){try{const b=JSON.parse(localStorage.getItem('dabogi.v1')||'{}');return b._me&&b._me.name?{cls:b._me.cls,name:b._me.name}:null}catch(e){return null}}
+/* 블라인드 테스트에서 로그인한 이름을 그대로 써요 */
+{const hm0=hubMe();if(hm0)switchUser(hm0)}
 function homeView(){
   const t=sumBy(x=>dkey(x.start)===today());
-  return `<div class="row" style="justify-content:space-between"><h1>${esc(S.me.name)}의 순공</h1>${netPill()}</div>
+  return `<a href="../" class="sub" style="text-decoration:none;display:inline-block;margin-bottom:4px">← 블라인드 테스트</a><div class="row" style="justify-content:space-between"><h1>${esc(S.me.name)}의 순공</h1>${netPill()}</div>
   <div class="card"><div class="sub">오늘 순공 시간</div><div class="big">${hms(t.all)}</div>
    <div class="split"><div class="cam" style="width:${t.all?t.cam/t.all*100:0}%"></div><div class="btnc" style="width:${t.all?t.btn/t.all*100:0}%"></div></div>
    <div class="row sub"><span><span class="dot cam"></span> 카메라 ${hm(t.cam)}</span><span style="margin-left:auto"><span class="dot btnc"></span> 버튼 ${hm(t.btn)}</span></div></div>
@@ -262,7 +274,10 @@ function helpView(){
   <div class="card tip"><b>홈 화면에 추가</b><br>${ios?'Safari 아래 공유 버튼 → 홈 화면에 추가':'크롬 ⋮ 메뉴 → 홈 화면에 추가(앱 설치)'}하면 앱처럼 쓸 수 있어요.</div>
   <div class="card"><div class="sub">${esc(S.me.cls)} ${esc(S.me.name)}</div><button class="ghost" id="logout" style="margin-top:8px">다른 이름으로 바꾸기</button></div>`;
 }
-document.addEventListener('click',e=>{if(e.target.id==='logout'){if(S.unsent.length&&!confirm('아직 안 보낸 기록이 있어요. 그래도 바꿀까요?'))return;S={sessions:[],unsent:[],subj:'수학'};pickCls='';save();render()}});
+document.addEventListener('click',e=>{if(e.target.id==='logout'){
+  if(hubMe()){location.href='../#study';return}  /* 이름 바꾸기는 블라인드 테스트 화면에서 같이 해요 */
+  if(S.me){try{localStorage.setItem(KEY+'|'+ukey(S.me),JSON.stringify(S))}catch(e){}}
+  S={sessions:[],unsent:[],subj:'수학'};pickCls='';save();render()}});
 
 /* ===== 타이머 ===== */
 let R=null; /* 진행 중 상태 */
