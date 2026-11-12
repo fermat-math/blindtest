@@ -58,5 +58,53 @@
 "1-2-final-5.html": {
 "id": "1-2-final-5",
 "grade": 7
+},
+"1-2-solid-1.html": {
+"id": "1-2-solid-1",
+"grade": 7
+},
+"1-2-solid-2.html": {
+"id": "1-2-solid-2",
+"grade": 7
+},
+"1-2-solid-3.html": {
+"id": "1-2-solid-3",
+"grade": 7
+},
+"1-2-data-1.html": {
+"id": "1-2-data-1",
+"grade": 7
+},
+"1-2-data-2.html": {
+"id": "1-2-data-2",
+"grade": 7
+},
+"1-2-data-3.html": {
+"id": "1-2-data-3",
+"grade": 7
+},
+"2-2-sim-1.html": {
+"id": "2-2-sim-1",
+"grade": 8
+},
+"2-2-sim-2.html": {
+"id": "2-2-sim-2",
+"grade": 8
+},
+"2-2-sim-3.html": {
+"id": "2-2-sim-3",
+"grade": 8
+},
+"2-2-prob-1.html": {
+"id": "2-2-prob-1",
+"grade": 8
+},
+"2-2-prob-2.html": {
+"id": "2-2-prob-2",
+"grade": 8
+},
+"2-2-prob-3.html": {
+"id": "2-2-prob-3",
+"grade": 8
 }
 }

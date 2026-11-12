@@ -1,0 +1,1009 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#13283b"><link rel="apple-touch-icon" href="assets/icons/s-180.png?v=2"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="페르마 시험대비"><script src="assets/install.js" defer></script><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>2-2 확률1 · 블라인드 테스트</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" id="fonts" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style id="page-style">
+/* Layout: a navy masthead (Fermat's margin note behind it), then one notebook column — exam list, or one exam with a sticky answer sheet. */
+:root{
+  --paper:#f3f5f7; --sheet:#ffffff; --grid:#e4e9ee; --ink:#14202e; --muted:#566373;
+  --line:#d3dbe4; --blue:#1d5b78; --blue-soft:#e2eef3; --red:#c23b2c; --red-soft:#fbe9e6;
+  --green:#257a4c; --green-soft:#e2f2e8; --hi:#f4c84a; --hi-soft:#fdf3d2; --band:#13283b; --band-ink:#f3f5f7; --margin:#e9a29a; --dot:#c9d2dc;
+  --f-display:"Gowun Batang","Nanum Myeongjo","AppleMyungjo",serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0e161f; --sheet:#15202b; --grid:#18242f; --ink:#e5ecf2; --muted:#93a2b2;
+  --line:#283746; --blue:#72b4d3; --blue-soft:#163040; --red:#ff8a78; --red-soft:#3a201c;
+  --green:#64d29b; --green-soft:#15302a; --hi:#e8bd45; --hi-soft:#3a3216; --band:#1c3850; --band-ink:#eef2f6; --margin:#6b3a36; --dot:#253443; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0e161f; --sheet:#15202b; --grid:#18242f; --ink:#e5ecf2; --muted:#93a2b2;
+  --line:#283746; --blue:#72b4d3; --blue-soft:#163040; --red:#ff8a78; --red-soft:#3a201c;
+  --green:#64d29b; --green-soft:#15302a; --hi:#e8bd45; --hi-soft:#3a3216; --band:#1c3850; --band-ink:#eef2f6; --margin:#6b3a36; --dot:#253443; color-scheme:dark}
+*{box-sizing:border-box}
+body{color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;min-height:100%;
+  background-color:var(--paper);
+  background-image:radial-gradient(ellipse 120% 420px at 50% -60px,color-mix(in srgb,var(--band) 16%,transparent),transparent 70%),radial-gradient(circle,var(--dot) 1.2px,transparent 1.4px);
+  background-size:100% 100%,22px 22px;background-attachment:scroll,scroll;background-repeat:no-repeat,repeat}
+.wrap{max-width:860px;margin:0 auto;padding-block:20px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:20px}
+header.top{position:relative;overflow:hidden;background:var(--band);color:var(--band-ink);border-radius:16px;padding:22px 22px 20px;display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+header.top>*{position:relative}
+header.top .note{position:absolute;right:14px;top:-6px;font-family:var(--f-display);font-size:52px;line-height:1;white-space:nowrap;color:var(--band-ink);opacity:.08;pointer-events:none;letter-spacing:-1px}
+header.top .note sup{font-size:.55em}
+.acad{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;letter-spacing:.14em;color:var(--hi)}
+.acad::before{content:"";width:18px;height:2px;background:var(--hi)}
+h1{font-family:var(--f-display);font-weight:700;font-size:36px;line-height:1.15;margin:6px 0 0;letter-spacing:-.5px;text-wrap:balance}
+h1 em{font-style:normal;position:relative;white-space:nowrap}
+h1 em::after{content:"";position:absolute;left:-3px;right:-3px;bottom:.02em;height:.3em;background:var(--hi);opacity:.85;z-index:-1;border-radius:2px}
+h1 em{z-index:0;color:var(--band-ink)}
+header.top .sub{color:var(--band-ink);opacity:.78}
+h2{font-family:var(--f-display);font-weight:700;font-size:24px;margin:0;text-wrap:balance}
+h3{font-size:15px;margin:0}
+.sub{color:var(--muted);margin:4px 0 0;max-width:60ch}
+.tabs{display:flex;gap:4px;background:color-mix(in srgb,var(--band-ink) 10%,transparent);border:1px solid color-mix(in srgb,var(--band-ink) 22%,transparent);border-radius:10px;padding:4px}
+.tabs button{border:0;background:none;padding:6px 14px;border-radius:7px;font:inherit;font-weight:500;color:var(--band-ink);opacity:.8;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--hi);color:var(--band);opacity:1;font-weight:700}
+.panel{background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:20px 20px 20px 26px;background-image:linear-gradient(90deg,transparent 13px,var(--margin) 13px,var(--margin) 14px,transparent 14px);display:flex;flex-direction:column;gap:16px}
+.label{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:700}
+input[type=text],textarea,select{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+textarea{font-family:var(--f-mono);min-height:200px;resize:vertical;line-height:1.7}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.field{display:flex;flex-direction:column;gap:6px}
+.hint{font-size:13px;color:var(--muted)}
+.btn{font:inherit;font-weight:700;border-radius:9px;padding:11px 18px;border:1px solid var(--band);background:var(--band);color:var(--band-ink);cursor:pointer}
+#grade{background:var(--hi);border-color:var(--hi);color:#13283b;font-size:16px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:none;color:var(--blue)}
+.btn.danger{border-color:var(--red);background:none;color:var(--red)}
+.btn.small{padding:6px 12px;font-size:13px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.exam-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.exam-card{text-align:left;font:inherit;color:inherit;background:var(--sheet);border:1px solid var(--line);border-top:4px solid var(--band);border-radius:12px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+.exam-card:hover{border-color:var(--blue);border-top-color:var(--hi)}
+.stamp{position:absolute;right:14px;top:50%;width:76px;height:76px;margin-top:-38px;border:3px solid #c8302b;border-radius:50%;box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 5px #c8302b;color:#c8302b;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-14deg);font-family:var(--f-display);line-height:1;pointer-events:none;opacity:.88;mix-blend-mode:multiply}
+.stamp b{font-size:24px;font-weight:900;letter-spacing:2px}.stamp small{font-size:10px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+.exam-card{position:relative}.exam-card.passed{padding-right:104px}
+.cert{position:relative}.cert>.big,.cert>p:first-of-type{padding-right:100px}.cert .stamp{top:16px;right:16px;margin-top:0;width:96px;height:96px}.cert .stamp b{font-size:30px}
+@media (prefers-reduced-motion:no-preference){.cert .stamp{animation:stampin .45s cubic-bezier(.2,1.6,.4,1) both .15s}@keyframes stampin{from{transform:rotate(-14deg) scale(2.2);opacity:0}to{transform:rotate(-14deg) scale(1);opacity:.88}}}
+.exam-card h3{font-family:var(--f-display);font-size:18px}
+.exam-card .meta{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--blue-soft);color:var(--blue)}
+.chip.done{background:var(--green-soft);color:var(--green)}
+.chip.ex{background:var(--grid);color:var(--muted)}
+.exam-layout{display:flex;flex-direction:column;gap:12px}
+.exbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:8;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px 10px 16px;border-radius:12px;background:var(--band);color:var(--band-ink);box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.exbar .hint{color:var(--band-ink);opacity:.75}
+.exbar-t{font-family:var(--f-display);font-weight:700;font-size:18px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sheetbtn{flex:none;background:var(--hi);border-color:var(--hi);color:#13283b;padding:10px 14px;font-size:15px;display:flex;flex-direction:column;align-items:center;line-height:1.15}
+.sheetbtn small{font-weight:500;font-size:11px}
+.sheetview{position:fixed;inset:0;z-index:50;background:var(--paper);display:flex;flex-direction:column}
+.sv-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:calc(10px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 10px max(12px,env(safe-area-inset-left,0px));background:var(--band);color:var(--band-ink)}
+.sv-bar strong{flex:1;min-width:0;font-family:var(--f-display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sv-bar .hint{color:var(--band-ink);opacity:.8;font-variant-numeric:tabular-nums}
+.sv-bar .btn{background:var(--hi);border-color:var(--hi);color:#13283b;padding:10px 14px}
+.sv-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px max(8px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.sv-body .sheet-imgs{max-width:900px;margin:0 auto}
+body.noscroll{overflow:hidden}
+.sheet-imgs{display:flex;flex-direction:column;gap:10px}
+.sheet-imgs img{width:100%;border:1px solid var(--line);border-radius:8px;background:#fff}
+.sq{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 10px 6px}.sq img{border:0;border-radius:0;display:block}
+.sq-n{display:flex;align-items:baseline;gap:8px;margin:0 0 4px 2px}.sq-n b{color:#00abff;font:800 26px/1 system-ui,sans-serif}.sq-n span{font-size:12px;color:#888;font-weight:700}
+.noimg{border:1px dashed var(--line);border-radius:8px;padding:28px;text-align:center;color:var(--muted)}
+.answers{padding-left:20px}
+.ans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:10px 22px}
+.ans{min-width:0}
+.mc{display:flex;gap:6px;flex:1;min-width:0}
+.mc button{flex:1;min-width:0;height:52px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-size:26px;line-height:1;cursor:pointer;padding:0;touch-action:manipulation}
+.mc button:active{transform:scale(.96)}
+.mc button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:var(--sheet)}
+.sa{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.flds{display:flex;gap:10px;flex-wrap:wrap}.fld{display:flex;align-items:center;gap:6px;flex:1;min-width:110px}.fld b{font-family:'Times New Roman',serif;font-style:italic;font-size:18px;white-space:nowrap}.fld input{flex:1;min-width:0}.fsep{align-self:center;font-size:22px;font-weight:700;color:var(--muted)}
+.mprev{font-size:19px;min-height:1.4em;color:var(--blue);font-family:"Times New Roman",serif;line-height:1.4;overflow-x:auto;white-space:nowrap}
+.mprev sup{font-size:.7em}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.85em;line-height:1.05;margin:0 2px}.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 2px}
+.rt{border-top:1px solid currentColor;padding-left:1px}
+.mkeys{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--paper);position:sticky;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:5}
+.mkeys button{height:48px;padding:0 4px;border:1px solid var(--line);border-radius:9px;background:var(--sheet);color:var(--ink);font:inherit;font-size:19px;cursor:pointer;touch-action:manipulation}
+.mkeys .lbl{grid-column:1/-1;font-size:12px;color:var(--muted)}
+.ans{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.ans>span{font-family:var(--f-display);font-weight:700;font-size:22px;width:34px;text-align:right;color:var(--ink);flex:none}
+.ans input{height:52px;padding:8px 12px;font-size:20px;font-variant-numeric:tabular-nums;border-radius:12px;border-width:1.5px}
+#grade{width:100%;padding:16px;font-size:18px}
+.ans>span small{display:block;font-family:var(--f-body);font-size:10px;font-weight:700;color:var(--blue);line-height:1.1}
+.ans.wrong input{border-color:var(--red);background:var(--red-soft)}
+.verdict{border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.verdict.bad{background:var(--red-soft);border:1px solid var(--red)}
+.verdict.good{background:var(--green-soft);border:1px solid var(--green)}
+.big{font-family:var(--f-display);font-weight:700;font-size:28px;line-height:1.2}
+.bad .big{color:var(--red)} .good .big{color:var(--green)}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:14px;cursor:pointer}
+.check input{margin-top:4px;accent-color:var(--blue)}
+.log{display:flex;flex-wrap:wrap;gap:6px;font-family:var(--f-mono);font-size:13px}
+.log b{font-weight:500;padding:2px 8px;border-radius:6px;background:var(--paper);border:1px solid var(--line)}
+.log b.z{border-color:var(--green);color:var(--green)}
+.cert{border:2px solid var(--green);border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:12px;background:var(--sheet)}
+.cert dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0}
+.cert dt{color:var(--muted);font-size:13px} .cert dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap}
+.thumbs img{width:72px;height:96px;object-fit:cover;border:1px solid var(--line);border-radius:6px}
+.tlist{display:flex;flex-direction:column}
+.titem{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.titem:first-child{border-top:0}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--sheet);padding:10px 18px;border-radius:9px;font-weight:500;z-index:20}
+.rtable{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.rrow{display:flex;gap:12px;align-items:center;padding:8px 12px;border-top:1px solid var(--line)}.rrow:first-child{border-top:0}
+.rno{font-family:var(--f-mono);font-size:13px;color:var(--muted);width:34px;flex:none}
+.rq{display:flex;flex-wrap:wrap;gap:6px}
+.qb{font-weight:700;font-size:13px;padding:2px 9px;border-radius:6px;background:var(--red-soft);color:var(--red)}.qb.ok{background:var(--green-soft);color:var(--green)}
+.why{display:flex;flex-direction:column;gap:10px}
+.wcard{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--paper)}
+.wcard .hint{font-variant-numeric:tabular-nums;min-width:0}
+.rsel{display:flex;flex-wrap:wrap;gap:6px}
+.rpill{cursor:pointer}.rpill input{position:absolute;opacity:0;pointer-events:none}
+.rpill span{display:inline-block;padding:5px 11px;border-radius:99px;border:1px solid var(--line);font-size:13px;background:var(--sheet)}
+.rpill input:checked+span{background:var(--blue);border-color:var(--blue);color:var(--sheet)}
+.rpill input:focus-visible+span{outline:2px solid var(--blue);outline-offset:2px}
+.arow{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px dashed var(--line)}
+.ans-w{font-family:var(--f-mono);font-weight:500;color:var(--red);text-decoration:line-through;text-decoration-thickness:1px}
+.areason{font-size:14px}
+.ablock{display:flex;flex-direction:column;gap:2px;font-size:14px}
+.chip.warn{background:var(--red-soft);color:var(--red)}
+.tally{display:flex;flex-direction:column;gap:6px}
+.trow{display:grid;grid-template-columns:110px minmax(0,1fr) 40px;gap:10px;align-items:center;font-size:14px}
+.trow b{text-align:right;font-variant-numeric:tabular-nums}
+.tbar{height:10px;background:var(--grid);border-radius:99px;overflow:hidden}.tbar i{display:block;height:100%;background:var(--red);border-radius:99px}
+.krow{display:flex;gap:10px;flex-wrap:wrap}.krow .field{flex:1 1 120px;min-width:0}
+.keypages{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.kp{flex:none;display:flex;flex-direction:column;gap:4px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:6px;background:var(--paper);font:inherit;font-size:12px;color:var(--muted);cursor:pointer}
+.kp:hover{border-color:var(--blue)}.kp img{width:84px;height:112px;object-fit:cover;object-position:top;border-radius:4px;background:#fff}
+#kcompare{display:flex;flex-direction:column;gap:8px;margin-top:6px}.kimg{width:100%;border:1px solid var(--line);border-radius:8px;background:#fff}
+.ktypes{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.ktypes .lbl{width:100%;font-size:12px;color:var(--muted)}
+.kt{display:flex;flex-direction:column;align-items:center;min-width:48px;padding:4px 6px;border-radius:7px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);font:inherit;font-weight:700;font-size:13px;cursor:pointer;line-height:1.2}
+.kt small{font-weight:500;font-size:10px;color:var(--muted)}.kt.mc{border-color:var(--blue)}.kt.mc small{color:var(--blue)}.kt.mcm{border-color:var(--blue);background:var(--blue-soft)}.kt.mcm small{color:var(--blue)}
+.rtime{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;flex:none;min-width:0}
+@media (max-width:480px){.rrow{flex-wrap:wrap}.rtime{width:calc(100% - 46px)}}
+.wait{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:9px;background:var(--hi-soft);border:1px solid var(--hi)}
+.wait-t{font-family:var(--f-mono);font-size:22px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--ink)}
+.wait-bar{height:6px;border-radius:99px;background:var(--sheet);overflow:hidden}.wait-bar i{display:block;height:100%;width:0;background:var(--hi);transition:width 1s linear}
+
+.mfp{background:#fff;color:#1b1b1b;border:1px solid #e3e3e3;border-radius:6px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.mfp-strip{height:12px;background:#00abff}
+.mfp-head{display:flex;gap:16px;align-items:flex-start;padding:22px 16px 6px 0}
+.mfp-tab{flex:none;background:#00abff;color:#fff;border-radius:0 18px 18px 0;padding:14px 16px 14px 14px;text-align:right;display:flex;flex-direction:column;gap:4px;min-width:118px}
+.mfp-tab b{font-size:19px;font-weight:800;letter-spacing:-.5px}.mfp-tab span{font-size:11px;font-weight:700;white-space:nowrap}
+.mfp-title{min-width:0}.mfp-title h2{margin:2px 0 4px;font-size:22px;font-weight:800;letter-spacing:-.5px}.mfp-title p{margin:0;color:#7c7c7c;font-weight:700;font-size:13px}
+.mfp-name{margin-top:10px;font-size:12px;font-weight:700;color:#555}.mfp-name u{text-decoration:none;border-bottom:1px solid #777;padding:0 14px 1px 6px;color:#1b1b1b;font-weight:500}
+.mfp-body{display:grid;grid-template-columns:1fr;gap:4px 0;padding:10px 16px 6px}
+@media (min-width:760px){.mfp-body{grid-template-columns:1fr 1fr;column-gap:40px;background:linear-gradient(#e3e3e3,#e3e3e3) center/2px 100% no-repeat}}
+.mfq{padding:12px 0 6px;break-inside:avoid}
+.mfq-tag{display:flex;align-items:center;gap:6px;min-width:0;margin-bottom:6px}
+.mfq-pill{flex:none;background:#00abff;color:#fff;font-weight:800;font-size:12px;border-radius:4px;padding:3px 7px}
+.mfq-pill.bt{background:#ff8a00}.btset{margin-top:10px}.btset .label{margin-bottom:6px}
+.mfq-unit{color:#7c7c7c;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mfq-row{display:flex;gap:8px;align-items:flex-start}.mfq-no{flex:none;color:#00abff;font-size:26px;font-weight:800;line-height:1;width:38px;font-family:system-ui,sans-serif}
+.mfq-row img{flex:1;min-width:0;width:100%;height:auto;display:block}
+.mfq-solve{height:56px}
+.mfp-foot{display:flex;align-items:center;gap:10px;padding:8px 16px 14px}.mfp-foot b{color:#7c7c7c;font-size:14px}.mfp-foot i{flex:1;height:2px;background:#9fdcfb}
+.mfp-ans{margin-top:12px}.mfp-ansbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px}.mfp-ansbar h2{margin:0;font-size:18px;font-weight:800}
+.mfa{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));border-top:2px solid #333;border-bottom:2px solid #333;margin:0 16px 18px}
+.mfa-c{display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:baseline;padding:9px 8px;border-bottom:1px solid #d0d0d0;border-right:1px solid #d0d0d0}
+.mfa-c b{color:#00abff;font-weight:800}.mfa-c small{grid-column:1/-1;order:3;color:#9a9a9a;font-size:10px}.mfa-c span{min-width:0;overflow-wrap:anywhere}
+
+/* ===== ONE REPORT 보고서 ===== */
+.or h2,.or h3,.or-big,.or-score b,.or-sum b{font-family:inherit}
+.cert.or{border:0;padding:0;gap:0;background:transparent;color:#222;font-family:"Noto Sans KR","IBM Plex Sans KR",system-ui,sans-serif}
+.or .or-cover,.or .or-sec{background:#fff;color:#222;border:1px solid #e6e6e6;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.05);padding:26px 22px;position:relative}
+.or .or-sec{margin-top:12px}
+.or .or-cover{min-height:520px;display:flex;flex-direction:column}
+.or .or-cover .stamp{top:auto;bottom:70px;right:22px}
+.or-date{font-size:22px;font-weight:400;letter-spacing:.5px;padding-bottom:10px;border-bottom:3px solid #111;max-width:420px}
+.or-tag{font-size:10px;margin-top:8px;color:#333}
+.or-big{margin:56px 0 30px;font-size:clamp(56px,17vw,110px);line-height:.92;font-weight:300;letter-spacing:-1px;background:linear-gradient(180deg,#1666a8 0%,#1ea7ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.or-who{display:flex;flex-direction:column;gap:4px}.or-who b{font-size:22px;font-weight:400}.or-who span{font-size:13px;color:#444}
+.or-msg{margin:18px 0 0;font-size:14px;color:#333;padding-right:96px}.or-msg b{color:#1ea7ff}
+.or-share{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.or-kakao{font:inherit;font-weight:700;font-size:14px;background:#fee500;color:#191600;border:0;border-radius:8px;padding:10px 14px;cursor:pointer}.or-kakao:active{transform:translateY(1px)}
+.or-logo{width:120px;margin-top:auto;align-self:flex-start;padding-top:28px}
+.or-run{display:flex;align-items:center;gap:14px;font-size:13px;color:#222}.or-run::after{content:"";flex:1;height:1px;background:#333}
+.or-h{margin:14px 0 18px;font-size:30px;font-weight:300;color:#1ea7ff;letter-spacing:-.5px}.or-h small{font-size:17px;font-weight:500}
+.or-t{margin:26px 0 12px;font-size:16px;font-weight:700;color:#111}.or-t.b{color:#1ea7ff}.or-t.o{color:#ff8a00}
+.or-score{display:flex;align-items:center;justify-content:space-around;text-align:center;padding:4px 0 18px}
+.or-score>div{display:flex;flex-direction:column;align-items:center}.or-score span{font-size:12px;color:#1ea7ff}.or-score span.o{color:#ff8a00}
+.or-score b{font-size:60px;font-weight:400;line-height:1.05;color:#1ea7ff}.or-score b.o{color:#ff8a00}.or-score em{font-style:normal;font-size:12px;color:#888}.or-score>i{width:1px;height:40px;background:#ccc}
+.or-meta{border-top:1px solid #bbb;border-bottom:1px solid #bbb}.or-meta-h{background:#eee;text-align:center;font-size:12px;font-weight:700;padding:6px}
+.or-meta dl{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));column-gap:24px}
+.or-meta dl>div{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;border-top:1px solid #eee;font-size:12px}.or-meta dt{color:#888;white-space:nowrap}.or-meta dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.or-chart{width:100%;height:auto;display:block}
+.or-rounds{display:flex;flex-direction:column;border-top:1px solid #ddd}
+.or-round{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;padding:8px 2px;border-bottom:1px solid #eee;font-size:12px}.or-round>b{color:#1ea7ff;min-width:34px}
+.or-rt{color:#666;font-variant-numeric:tabular-nums}.or-rq{display:flex;flex-wrap:wrap;gap:4px;margin-left:auto}
+.or-x,.or-ok{font-style:normal;font-size:11px;padding:2px 6px;border-radius:2px;background:#fff3e6;color:#e57a00;font-weight:700}.or-ok{background:#e6f5ff;color:#1ea7ff}
+.or-note{font-size:11px;color:#999;margin:6px 0 0}
+.or-types{display:grid;grid-template-columns:1fr;gap:0 24px}@media (min-width:600px){.or-types{grid-template-columns:1fr 1fr}}
+.or-tl{display:flex;flex-direction:column;gap:4px}.or-ti{display:flex;gap:8px;align-items:center;background:#f6f6f6;font-size:12px;min-width:0}.or-ti>span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.or-none{margin:0;font-size:12px;color:#999}
+.or-qn{display:inline-block;flex:none;background:#1ea7ff;color:#fff;font-size:11px;font-weight:700;padding:2px 6px;min-width:34px;text-align:center}.or-qn.o{background:#ff8a00}
+.or-items{display:flex;flex-direction:column}
+.or-item{display:grid;grid-template-columns:44px minmax(0,1fr) 22px minmax(50px,30%) 62px;gap:8px;align-items:center;padding:6px 0;font-size:11px;border-bottom:1px solid #f2f2f2}
+.or-item .or-qn{background:none;color:#888;font-weight:500;padding:0;text-align:left}.or-item .or-qn.o{color:#ff8a00;border:1px solid #ff8a00;text-align:center;font-weight:700}
+.or-cn{color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.or-mk{width:16px;height:16px;border-radius:50%;border:2.5px solid #1ea7ff;justify-self:center}
+.or-mk.x{border:0;border-radius:0;position:relative}.or-mk.x::before,.or-mk.x::after{content:"";position:absolute;left:7px;top:-1px;width:3px;height:18px;background:#f0442c;transform:rotate(45deg)}.or-mk.x::after{transform:rotate(-45deg)}
+.or-bar{height:12px;background:#f0f0f0}.or-bar i{display:block;height:100%;background:#cfd8df}
+.or-pc{color:#888;text-align:right;white-space:nowrap}
+.or-purpose{display:flex;gap:12px;font-size:12px;line-height:1.6}.or-purpose b{flex:none}
+.or-sum-h{margin:24px 0 10px;font-size:24px;font-weight:500}.or-sum-h small{font-size:12px;font-weight:400}
+.or-sum{display:grid;grid-template-columns:repeat(4,1fr);text-align:center;gap:4px}
+.or-sum span{font-size:11px;color:#1ea7ff}.or-sum span.o{color:#ff8a00}.or-sum b{display:block;font-size:34px;font-weight:400;color:#1ea7ff}.or-sum b.o{color:#ff8a00}.or-sum em{font-style:normal;font-size:13px;margin-left:2px}
+.or .summary{margin-top:6px}
+.or .why{display:flex;flex-direction:column;gap:10px}
+.or .wcard{background:#f2f2f2;border:0;border-radius:0;padding:14px;color:#222}.or .wcard .label{color:#1ea7ff}.or .wcard .hint{color:#777}
+.or .arow{border-top:1px dashed #d6d6d6}.or .areason{color:#444}
+.or .tbar{background:#eee}.or .tbar i{background:#1ea7ff}
+.or-again{margin-top:22px}
+@media (max-width:420px){.or-item{grid-template-columns:40px minmax(0,1fr) 20px 46px 56px;gap:6px}.or-sum b{font-size:26px}.or-score b{font-size:48px}}
+.vtips{border-top:1px dashed var(--line);padding-top:10px;font-size:14px}.vtips ul{margin:6px 0 8px;padding-left:20px;display:flex;flex-direction:column;gap:3px}
+.rules{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:9px;border:1px dashed var(--line);background:var(--paper);font-size:13px;color:var(--muted)}
+.rules strong{color:var(--ink);font-size:14px}
+.rsteps{display:flex;flex-wrap:wrap;gap:4px}
+.rsteps span{display:inline-flex;flex-direction:column;align-items:center;min-width:52px;padding:4px 6px;border-radius:7px;background:var(--sheet);border:1px solid var(--line);font-family:var(--f-mono);font-size:13px;color:var(--ink)}
+.rsteps b{font-family:var(--f-body);font-size:11px;font-weight:500;color:var(--muted)}
+.tabhint{margin:-4px 4px 0}
+.maintabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;border-radius:14px;background:var(--sheet);border:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:9}
+.maintabs button{font:inherit;font-weight:700;font-size:16px;padding:12px 8px;border:0;border-radius:10px;background:none;color:var(--muted);cursor:pointer}
+.maintabs button[aria-selected="true"]{background:var(--band);color:var(--band-ink)}
+.sets{display:flex;flex-direction:column;gap:8px}
+.nset{border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+.nset summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;cursor:pointer;font-weight:700;list-style:none}
+.nset summary::-webkit-details-marker{display:none}
+.nset summary::before{content:"▸";color:var(--muted)}.nset[open] summary::before{content:"▾"}
+.nset summary .hint{font-weight:400}
+.ncnt{margin-left:auto;min-width:26px;text-align:center;padding:1px 8px;border-radius:99px;background:var(--red);color:var(--sheet);font-size:13px}
+.ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:6px;padding:0 12px 12px}
+.nb{height:46px;border-radius:9px;border:1.5px solid var(--line);background:var(--sheet);color:var(--ink);font:inherit;font-family:var(--f-mono);font-size:15px;cursor:pointer;touch-action:manipulation}
+.nb[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:var(--sheet);font-weight:700}
+.nbar{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:9;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:var(--band);color:var(--band-ink);box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.nbar #ncount{flex:1}.nbar b{color:var(--hi);font-size:18px}
+.nbar #nmake{background:var(--hi);border-color:var(--hi);color:#13283b}.nbar .btn.ghost{color:var(--band-ink);border-color:color-mix(in srgb,var(--band-ink) 40%,transparent)}
+.nsec{margin-top:6px}
+.ncard img{width:100%;height:auto;background:#fff;border-radius:6px}
+.nwrite{min-height:120px;border:1px dashed var(--line);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--muted)}
+.nans{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px 16px}
+.nans>div{display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px dashed var(--line);font-variant-numeric:tabular-nums}
+.nans b{font-family:var(--f-mono);font-weight:500;flex:none}
+.back{align-self:flex-start}
+/* 인쇄: 결과지(ONE REPORT)를 A4에 깔끔하게 — 버튼·머리띠·점무늬는 빼고, 덩어리가 페이지 사이에서 잘리지 않게 */
+@media print{
+  @page{size:A4;margin:10mm}
+  :root{--paper:#fff;--sheet:#fff;--ink:#14202e;--muted:#566373;--line:#d3dbe4}
+  html,body{background:#fff!important;color:#14202e;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background-image:none!important}
+  body:has(.cert.or) header.top,body:has(.cert.or) .maintabs,body:has(.cert.or) .tabhint,body:has(.cert.or) .back,.or-share,.or-again,.toast,.pops,.nbar,.exbar,.sheetbtn{display:none!important}
+  .wrap{max-width:none;padding:0!important;gap:0}
+  .cert.or{animation:none}
+  .or .or-cover,.or .or-sec{box-shadow:none;border:0;border-radius:0;padding:4mm 2mm;margin:0}
+  .or .or-cover{min-height:0;display:block;break-after:avoid}
+  .or .or-cover .stamp{top:6mm;bottom:auto;right:4mm;animation:none}
+  .or-big{margin:8mm 0 6mm;font-size:64px;background:none!important;color:#1a86d6!important;-webkit-text-fill-color:#1a86d6}
+  .or-msg{padding-right:0}
+  .or-logo{width:90px;padding-top:6mm}
+  .or .or-sec{border-top:1px solid #ddd}
+  .or-h{margin:4px 0 8px;font-size:24px}
+  .or-t{margin:12px 0 6px;break-after:avoid}
+  .or-score,.or-meta,.or-chart,.or-round,.or-tl,.or-sum,.or-purpose,.or-item,.wcard,.arow,.tally,.verdict{break-inside:avoid}
+  .or-chart{max-height:62mm;width:auto;margin:0 auto}
+  .or-sum-h{margin:12px 0 6px;break-after:avoid}
+  .or .why{gap:6px}
+  .or .wcard{padding:8px 10px}
+  a{color:inherit;text-decoration:none}
+}
+@media (prefers-reduced-motion:no-preference){.verdict,.cert{animation:pop .25s ease-out}@keyframes pop{from{transform:scale(.98)}to{transform:none}}}
+.pdflink{color:#f4c84a;font-weight:700;text-decoration:underline;white-space:nowrap}
+</style>
+<main class="wrap" id="app"></main>
+<script type="application/json" id="state">{"exams":[{"id":"2-2-prob-1","title":"2-2 확률1","salt":"5osh6n6f","hashes":[["a0e6d3c770ab857dba9669a4265dcebf7e137fe4d998398942bd0ed8f754a663"],["7c10e5ceaa3c62bcfd7dffe7d382ed1d91e4584151ff6d03613ca2bb9e16d704"],["1ee81f564b9c464e6293c8b13870083cf01da43a93badd867b295960bfc75367"],["944eacbac332148b02a0e43e4852829e26f5fdb7d6fb6d0d06a289166a6f7076"],["d4e340e38e1ab1aebaa68cb353103d3b9b4c2f04368997ef1f7dc75290816362"],["2bb9f237d3b87c27c2d11db414ae6c110e8de121f227cc37cde788250232d003"],["09029969ea63c2ef501cbbd2ff306b22d508e0dd3ed9c3da7248f87bccfdf6d8"],["77d202cef5dbf265703afb098adb18c7477e924135c30966253a8e1aa2b1113a"],["3b1bc23bf7211090c0140b831b4f16794e0cce2d5e8305ebd4b9466956340508"],["d9c800465108018fe7e2f5012ff05b2b342be3ed1f03d411c6605c9075c64651"],["669fd75ad104d1758a93e92afb4d5f1b5a1c65f6ec6e74ade660e5a9df12ee13"],["a9d772ffffe1bda5271a48ba9a4a7525dfac8d4c098dc988808d39979f5a295c"],["15d09a5a5844684baf71293eeb72d91210e51bce517fa7ec43c7664d43587a2e"],["48cf05075b55ad0c43d3e644b35900f717436706cb56bcb048a179d5491badbc"],["289b5503c122bd144f308bf1cf9881706ab2eae1cd645024e38a20a8e9bc6ed0"],["701dccda4fbcf15379cd6f96f5976798daf639fa40c0c28799ba3899c131b8c1"],["a1e343b4f04fd88ed9336ca000b6cfa8b7ffe0ab665d906e53ece7f6c9150255"],["b936012c604cbae60ece305a71897c4bee7ed19f5a46bd888562c775a97f8f1b"],["57ea2dcd544cedbc77ab669f80981553a20cad04d86e569d25234c77bd13eda3"],["e968ae45911496750cfef9aeeae02b4880978cb13736fc604528f11a6b419724"],["63147553c83b7d03b70f81718eeb0294fcf1556f98fd51dbd80d77aefd219f5c"],["582de294ad2f54e5a44d1a0ee356e1033b01dfcfca8416fcd3b9dee46d7e07d7"],["996cc371964b1fce711af204f7c9a1c0f191959f986f5489967a05819bd41cd1"],["9d641a24ec7420ef0fe3b34dc862c9d8d3973501ae3e7add1186b829ab9e041a"],["ea6bfca1b7717db2d95de60be949aee97ae93a244ad2f32ec40109d25ea80564"]],"images":["https://fermat-math.github.io/blindtest/exams/2-2-prob-1/01.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/02.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/03.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/04.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/05.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/06.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/07.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/08.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/09.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/10.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/11.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/12.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/13.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/14.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/15.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/16.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/17.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/18.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/19.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/20.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/21.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/22.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/23.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/24.jpg","https://fermat-math.github.io/blindtest/exams/2-2-prob-1/25.jpg"],"types":["mc","mc","sa","mc","sa","mc","mc","mc","mc","mc","sa","mc","mc","mc","mc","mc","sa","mc","mc","sa","mc","mc","mc","mc","mc"],"grade":8,"pageLabel":"문제","lock":{"wraps":[["686e24bca900a09e680b4732f98286681b3f7c62a4dc3f0da0ca5b5df9042f6b"],["9157969f8e3f27989893d863af550bdac310c7de62b883ff53f46ac12881d93d"],["77d438f31e1a32fc5325ca57b139e98e0ce3983dfba3ea1154fa3377e99bb493"],["c798a76699be5cc3224b70d696ad4d9e1538265e5041ae7eea8e7f7f47a9b5a9"],["6b1d30359b988fccaa34db36d99867daeb13c71a976ff3ccc2772716805abd2a"],["25cb4f2ce6fb6707e7a0cbc34a22c7bb65dfb6df59e73e88dc16a1841e0c7f27"],["738649cdba8bc0c8dbb692d7db109db430cb39bdb78ada6e9d0aa222395ae04c"],["44261e4f2925a1d9b94abdfc8a498b045f8bbf0b277e96f1fe5d58fd16e67604"],["363ab7d2595f74b1f4ea975792fcf939ab38453f85bf3d6c0e329d0f653a068b"],["a30c671881df71a264772583a73182e90c67ea099d177dc311f571f00676d668"],["945a410dd8580ac8feef918ce0b0f114367716362a8a31b648bf35517507c4bb"],["c9f9a73f5c8a8ff8cb00c73b93dad4d9af752e81c73f9d276a9c706bf2d762ae"],["70f06c9b4cd6bc6d5265309bac2985da4ff8e08d1043020cdc2b3622c5e37c10"],["4b47fe94eeb997672ed6084eabf545ca44ef17a7a9a3a0a7a21c49f4dd910589"],["9b8a8892b308c9b441747507c1589d1e11d7084aacc4e1a73e1c876f867a0492"],["e6301b8bc9c1cb4d41d85897699784e743ebff36794492e4443d4843f24f91dd"],["0b0ae788c449e6a9319197920453980e90a182ff1d118ba7ae86cc49f9307188"],["02fc932fd2836a3ef415acfc2a0c5958a45163bbcab8e0d528341b0b8f418d97"],["6a46426354efc82ff08d9ed3ff46332f6fcddb7f2722c069442cecf05b4b2088"],["f6c4432132d67bdf1ab2de87b996c09044c61d5f453b51bda3a7537b41e6a9cd"],["ab54e8cf6ad8a09061ba4c03e5289453dc05ebd79d1745e9b7818f67680ad662"],["9a52eb3fd71232af4433d164461c0bb5948ed7d702006312acf117db7434845c"],["6c8759f71ec8d8716d653a51a259b4bed174c735ddcbaf5053912d03bdad470c"],["f5bcde630a87803223f04b30cd41771ce1c40552a6eb4540fe081d8e16f0d78d"],["f72fd2140fc16081d93dc0b6da553c68a97724354f49c943acdc5dcd0447cc45"]],"iv":"tmwdVkGBAupXO1b6","ct":"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"},"pdf":"exams/2-2-prob-1/print.pdf"}],"studentOnly":true,"endpoint":"https://script.google.com/macros/s/AKfycbyzt_AuvfzMXuLG0IzsM_GzG-Kx7oqzvLBCkQ7eWxhmu_kDD6ETHH4fs39pB_b2kc_5PQ/exec","roster":[{"cls":"7유클리드","name":"구서아"},{"cls":"7유클리드","name":"김민정"},{"cls":"7유클리드","name":"김민하"},{"cls":"7유클리드","name":"김송현"},{"cls":"7유클리드","name":"노원준"},{"cls":"7유클리드","name":"박준서3"},{"cls":"7유클리드","name":"이호준"},{"cls":"7유클리드","name":"임성찬"},{"cls":"7유클리드","name":"최민기"},{"cls":"7유클리드","name":"황창민"},{"cls":"8데카르트1","name":"박소영"},{"cls":"8데카르트1","name":"방서준"},{"cls":"8데카르트1","name":"안석건"},{"cls":"8데카르트1","name":"유아준"},{"cls":"8데카르트1","name":"윤지유2"},{"cls":"8데카르트1","name":"이다현"},{"cls":"8데카르트1","name":"이시우"},{"cls":"8데카르트1","name":"추성민"},{"cls":"8유클리드","name":"권율"},{"cls":"8유클리드","name":"김수현2"},{"cls":"8유클리드","name":"심민관"},{"cls":"8유클리드","name":"윤지유"},{"cls":"8유클리드","name":"이수빈3"},{"cls":"8유클리드","name":"이재하"},{"cls":"8유클리드","name":"임도빈"},{"cls":"8유클리드","name":"정연우2"},{"cls":"8유클리드","name":"정지율"}],"hubLink":"./"}</script>
+<script id="main-script">
+(function(){
+const STATE = JSON.parse(document.getElementById('state').textContent);
+const app = document.getElementById('app');
+const LS = 'dabogi.v1';
+/* 테스트용 기기 기록 지우기: 주소 끝에 #reset */
+if(location.hash==='#reset'){try{if(confirm('이 기기에 저장된 블라인드 테스트·오답노트 기록을 모두 지울까요? (구글 시트 기록은 그대로예요)')){localStorage.removeItem('dabogi.v1');localStorage.removeItem('dabogi.queue');alert('이 기기의 기록을 지웠어요.')}}catch(e){}history.replaceState(null,'',location.pathname)}
+let prog = {}; try{ prog = JSON.parse(localStorage.getItem(LS)||'{}')||{} }catch(e){ prog={} }
+const saveProg=()=>{ try{ localStorage.setItem(LS, JSON.stringify(prog)) }catch(e){} };
+let view = {mode:'student', exam:null};
+let canTeach=false, artifactNs=null, autoOpened=false;
+const CHECKS=['문제를 처음부터 다시 천천히 읽어요','조건(정수, 자연수, 단위, ~가 아닌 것)에 밑줄을 쳐요','구한 답을 거꾸로 대입해서 맞는지 확인해요','답안지에 옮겨 적은 답이 풀이와 같은지 확인해요'];
+
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s||'').normalize('NFKC').replace(/[−–]/g,'-').replace(/\s+/g,'').toLowerCase();
+async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+const hashOf=(salt,i,v)=>sha(salt+':'+i+':'+norm(v));
+/* 주관식: 단위를 안 써도(또는 써도) 정답 처리 */
+const UNITS=['cm2','cm3','mm2','mm3','km2','m2','m3','cm','mm','km','kg','ml','m','g','l','%','°','도','개월','가지','시간','마리','송이','켤레','자루','조각','경기','개','명','번','회','원','배','장','쌍','권','살','분','초','점','일','년','쪽','줄','대','채','층','칸','곳','팀','통','병','잔','벌','시','주'];
+const UEQ={'도':['°'],'°':['도']};/* 같은 뜻의 단위 */
+function unitless(v){const n=norm(v);for(const u of UNITS)if(n.length>u.length&&n.endsWith(u)&&/[0-9π)\]}a-z]$/.test(n.slice(0,-u.length))&&!(/[a-z]$/.test(n.slice(0,-u.length))&&/^[a-z]/.test(u)))return n.slice(0,-u.length);return n}
+async function matchAns(ex,i,v){const hs=ex.hashes[i];const n=norm(v);if(!n)return null;
+  const tryV=async c=>{const hv=await hashOf(ex.salt,i,c);const j=hs.indexOf(hv);return j<0?null:{v:c,j}};
+  let r=await tryV(n);if(r)return r;
+  const t=qtypes(ex)[i];if(t&&t!=='sa')return null;
+  const b=unitless(n),u0=n.slice(b.length);
+  const uu=u0?[u0,...(UEQ[u0]||[])]:[];
+  if(b!==n){for(const c of [b,...uu.slice(1).map(u=>b+u)]){r=await tryV(c);if(r)return r}}else{for(const u of UNITS){r=await tryV(b+u);if(r)return r}}
+  for(const c of numVariants(b)){r=await tryV(c);if(r)return r;
+    if(u0){for(const u of uu){r=await tryV(c+u);if(r)return r}}else{for(const u of UNITS){r=await tryV(c+u);if(r)return r}}}
+  return null}
+/* 분수↔소수: 33/2 ↔ 16.5 ↔ 2분의33 (소수는 기약분수로 바꿔 비교, 분수는 약분하지 않음) */
+function numVariants(b){let p,q,m;const neg=b.startsWith('-')?'-':'';const x=neg?b.slice(1):b;
+  if(m=x.match(/^(\d+)분의(\d+)$/)){q=+m[1];p=+m[2]}
+  else if(m=x.match(/^(\d+)\/(\d+)$/)){p=+m[1];q=+m[2]}
+  else if(m=x.match(/^(\d+)\.(\d+)$/)){q=10**m[2].length;p=+(m[1]+m[2])}
+  else return [];
+  if(!q)return [];const g=(a,c)=>c?g(c,a%c):a,d=g(p,q),rp=p/d,rq=q/d;const dec=x.includes('.');const out=new Set(dec?[`${rp}/${rq}`,`${rq}분의${rp}`]:[`${p}/${q}`,`${q}분의${p}`]);
+  let t=rq;while(t%2===0)t/=2;while(t%5===0)t/=5;
+  if(t===1){let k=0,z=rq;while(z>1){z/=10;k++}out.add((rp/rq).toFixed(Math.max(k,1)).replace(/0+$/,'').replace(/\.$/,''))}
+  return [...out].map(v=>neg+v).filter(v=>v!==b)}
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+const h=(html)=>{const d=document.createElement('div');d.innerHTML=html;return d.firstElementChild};
+const myName=()=>prog._me?prog._me.name:(prog._name||'');
+/* 학년: 반 이름 앞 숫자(7→중1, 8→중2, 9→중3). 시험에는 grade(7/8/9)를 붙여 둔다. */
+const gradeOf=c=>{const m=String(c||'').match(/^\s*(\d)/);return m?+m[1]:null};
+const GRADE_LABEL=g=>g>=7&&g<=9?`중${g-6}`:g>=1&&g<=6?`초${g}`:g>=10&&g<=12?`고${g-9}`:'';
+const myGrade=()=>prog._me?gradeOf(prog._me.cls):null;
+const examVisible=ex=>{const k=prog._me?prog._me.cls+'|'+prog._me.name:'';
+  if(ex.who&&ex.who.length)return !k||ex.who.includes(k);   /* 특정 학생에게만 보이는 시험 */
+  if(k&&ex.hideFor&&ex.hideFor.includes(k))return false;     /* 특정 학생에게는 안 보이는 시험 */
+  return !ex.grade||!myGrade()||ex.grade===myGrade()};
+
+/* ---------- study log: only on hosted student pages that carry STATE.endpoint ---------- */
+const EP=STATE.endpoint||'';
+const PICK=EP||(Array.isArray(STATE.roster)&&STATE.roster.length>0);
+const QKEY='dabogi.queue';
+let queue=[];try{queue=JSON.parse(localStorage.getItem(QKEY)||'[]')||[]}catch(e){queue=[]}
+const saveQ=()=>{try{localStorage.setItem(QKEY,JSON.stringify(queue.slice(-300)))}catch(e){}};
+const device=(()=>{try{let d=localStorage.getItem('dabogi.dev');if(!d){d=Math.random().toString(36).slice(2,10);localStorage.setItem('dabogi.dev',d)}return d}catch(e){return 'x'}})();
+let flushing=false;
+async function flush(){if(!EP||flushing||!queue.length)return;flushing=true;
+  try{while(queue.length){const batch=queue.slice(0,5);const r=await fetch(EP+'?action=log&d='+encodeURIComponent(JSON.stringify(batch)));const j=await r.json();if(!j||!j.results)break;queue.splice(0,batch.length);saveQ()}}catch(e){}
+  flushing=false}
+const sess={id:null,ex:null,active:0,visSince:0,base:0};
+const activeMs=()=>sess.active+(sess.visSince?Date.now()-sess.visSince:0);
+const runSec=()=>Math.round(sess.base+activeMs()/1000);
+function evBase(ev,ex){return {ev,cls:prog._me.cls,name:prog._me.name,examId:ex.id,examTitle:ex.title,total:ex.hashes.length,at:Date.now(),session:sess.id,device,activeSec:Math.round(activeMs()/1000)}}
+/* 학생별 기록: 한 기기를 여러 학생이 써도 섞이지 않게, 다른 기기에서 통과한 시험도 보이게 */
+const ukey=m=>m?m.cls+'|'+m.name:'';
+function stashUser(){const k=ukey(prog._me);if(!k)return;const d={};for(const x of Object.keys(prog))if(x!=='_me'&&x!=='_users'&&x!=='_name'){d[x]=prog[x];delete prog[x]}(prog._users=prog._users||{})[k]=d}
+function setMe(m){stashUser();if(m){prog._me=m;const k=ukey(m),d=prog._users&&prog._users[k];if(d){Object.assign(prog,d);delete prog._users[k]}}else delete prog._me;saveProg();synced=null}
+let synced=null;
+function remotePr(ex,r){let x={};try{x=JSON.parse(r.extra||'{}')||{}}catch(e){}const st=ex.start||1;
+  const atts=(x.attempts||[]).map(a=>({w:(a.w||[]).map(q=>q-st),a:{},t:a.t,s:a.s}));if(!atts.length)atts.push({w:[],a:{},t:r.at,s:x.runSec});
+  return {answers:Array((ex.hashes||[]).length||ex.n||0).fill(''),attempts:atts,start:x.startedAt||r.at,done:r.at,spent:x.runSec||atts[atts.length-1].s||0,remote:true,reported:true}}
+function srvDone(ex){const r=prog._srv&&prog._srv[ex.id];if(!r)return null;const h=(prog._hist&&prog._hist[ex.id])||[];if(h.some(x=>x.done&&r.at<=x.done+60000))return null;return r}
+async function syncPass(){if(!EP||!prog._me||STATE.teacherView)return;const k=ukey(prog._me);if(synced===k)return;synced=k;
+  try{const j=await(await fetch(EP+'?action=mine&cls='+encodeURIComponent(prog._me.cls)+'&name='+encodeURIComponent(prog._me.name))).json();
+    if(!j||!j.ok||!j.passed||ukey(prog._me)!==k)return;
+    const before=JSON.stringify(prog._srv||{});prog._srv=j.passed;saveProg();
+    if(JSON.stringify(j.passed)!==before&&STATE.exams.some(ex=>!(prog[ex.id]&&prog[ex.id].done)&&srvDone(ex))&&!document.querySelector('.ans input:focus'))render()}catch(e){}}
+function logEv(ev,ex,extra){if(!EP||!prog._me)return;queue.push(Object.assign(evBase(ev,ex),extra||{}));saveQ();flush()}
+function beacon(ev,ex){if(!EP||!prog._me||!sess.id)return;const d=JSON.stringify([evBase(ev,ex)]);
+  try{if(navigator.sendBeacon&&navigator.sendBeacon(EP,new Blob([d],{type:'text/plain'})))return}catch(e){}
+  queue.push(JSON.parse(d)[0]);saveQ()}
+function persistSpent(){if(sess.ex&&prog[sess.ex.id]){prog[sess.ex.id].spent=runSec();saveProg()}}
+function sessStart(ex){if(sess.ex===ex)return;sessEnd();const pr=prog[ex.id];
+  sess.id=Date.now().toString(36)+Math.random().toString(36).slice(2,5);sess.ex=ex;sess.active=0;sess.base=(pr&&pr.spent)||0;
+  sess.visSince=document.visibilityState==='visible'?Date.now():0;logEv('start',ex)}
+function sessEnd(){if(!sess.ex)return;persistSpent();logEv('leave',sess.ex);sess.ex=null;sess.id=null}
+let hiddenAt=0;
+document.addEventListener('visibilitychange',()=>{if(!sess.ex)return;
+  if(document.visibilityState==='hidden'){sess.active+=sess.visSince?Date.now()-sess.visSince:0;sess.visSince=0;hiddenAt=Date.now();persistSpent();beacon('pause',sess.ex)}
+  else{if(Date.now()-hiddenAt>30*60000){const ex=sess.ex;sess.ex=null;sess.id=null;sessStart(ex)}else sess.visSince=Date.now();flush()}});
+window.addEventListener('pagehide',()=>{if(sess.ex){persistSpent();beacon('pause',sess.ex)}});
+window.addEventListener('online',flush);
+const fmtDur=sec=>{sec=Math.max(0,Math.round(sec||0));const m=Math.floor(sec/60),hh=Math.floor(m/60);return hh?`${hh}시간 ${m%60}분`:m?`${m}분`:`${sec}초`};
+const fmtTime=t=>new Date(t).toLocaleString('ko-KR',{month:'numeric',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit'});
+
+function render(){
+  setTimeout(syncPass,0);
+  app.innerHTML='';
+  const head=h(`<header class="top"><div class="note" aria-hidden="true">x<sup>n</sup>+y<sup>n</sup>=z<sup>n</sup></div><div><span class="acad">페르마 수학학원</span>${STATE.hub?'<h1>시험 <em>대비</em></h1>':'<h1>블라인드 <em>테스트</em></h1>'}<p class="sub">${view.mode==='teacher'?'시험을 올리면 학생들이 이 링크에서 직접 채점해요.':STATE.hub?'블라인드 테스트로 실수를 스스로 찾고, 오답노트로 틀린 문제를 다시 풀어요.':'몇 번이 틀렸는지는 가려져 있어요. 처음부터 다시 보면서 스스로 찾아요.'}</p></div></header>`);
+  if(canTeach){const tb=h(`<div class="tabs" role="group"><button data-m="student" aria-pressed="${view.mode==='student'}">학생 화면</button><button data-m="teacher" aria-pressed="${view.mode==='teacher'}">선생님</button></div>`);
+    tb.onclick=e=>{const m=e.target.dataset.m;if(m){view={mode:m,exam:null};render()}};head.appendChild(tb)}
+  app.appendChild(head);
+  if(view.mode==='teacher') return renderTeacher();
+  if(!view.exam&&!autoOpened&&STATE.studentOnly&&!STATE.hub&&STATE.exams.length===1&&prog._me){autoOpened=true;view.exam=STATE.exams[0].id}
+  if(view.exam) return renderExam(STATE.exams.find(x=>x.id===view.exam));
+  if(STATE.hub){const tb=h(`<nav class="maintabs" role="tablist"><button role="tab" data-t="blind" aria-selected="${TAB==='blind'}">블라인드 테스트</button><button role="tab" data-t="notes" aria-selected="${TAB==='notes'}">오답노트</button></nav>`);
+    tb.onclick=e=>{const t=e.target.closest('button');if(t&&t.dataset.t!==TAB)setTab(t.dataset.t)};app.appendChild(tb);
+    if(TAB==='notes'){if(PICK&&!(noteView&&noteView.note))renderWho();return renderNotes()}
+    app.appendChild(h(`<p class="hint tabhint">몇 번이 틀렸는지는 가려져 있어요. 다 맞을 때까지 처음부터 다시 보면서 스스로 찾아요.</p>`))}
+  renderHome();
+}
+
+/* ---------- 오답노트 (시험 대비 첫 화면의 두 번째 탭) ---------- */
+let TAB=(()=>{const h=location.hash.replace('#','');if(h==='notes'||h==='blind')return h;try{return localStorage.getItem('dabogi.tab')||'blind'}catch(e){return 'blind'}})();
+let BOOKS=null,booksErr=false,noteView=null;
+function setTab(t){TAB=t;try{localStorage.setItem('dabogi.tab',t)}catch(e){}noteView=null;render();scrollTo(0,0)}
+async function loadBooks(){if(BOOKS||booksErr)return;try{BOOKS=(await(await fetch('notes/books.json?v='+(STATE.v||''))).json()).books}catch(e){booksErr=true}render()}
+const wrongSet=bid=>{prog._wrong=prog._wrong||{};return new Set(prog._wrong[bid]||[])};
+const saveWrong=(bid,set)=>{prog._wrong=prog._wrong||{};prog._wrong[bid]=[...set];saveProg()};
+/* 블라인드 테스트에서 틀렸던 문제 (다 맞힌 시험만: 내가 고친 답이 곧 정답) */
+const btOff=()=>new Set(prog._btoff||[]);
+function btItems(){const out=[];STATE.exams.filter(examVisible).forEach(ex=>{const pr=prog[ex.id];if(!pr||!pr.done||!pr.attempts)return;
+  const imgAt=i=>(ex.images&&ex.images[i])||(ex.pageLabel==='문제'?`exams/${encodeURIComponent(ex.id)}/${String(i+1).padStart(2,'0')}.jpg`:'');
+  const tp=i=>(ex.types&&ex.types[i])||(ex.hashes?qtypes(ex)[i]:'sa');
+  const ever=[...new Set(pr.attempts.flatMap(a=>a.w))].sort((a,b)=>a-b);
+  ever.forEach(i=>{if(!imgAt(i)||!(pr.answers||[])[i])return;out.push({k:`bt:${ex.id}:${qn(ex,i)}`,e:ex.id,t:ex.title,q:qn(ex,i),img:imgAt(i),ans:tp(i)==='sa'?String(pr.answers[i]):String(pr.answers[i]).split(',').map(d=>CIRC[+d]||d).join(', ')})})});return out}
+const encSel=keys=>{const g={};keys.forEach(k=>{const[s,n]=k.split(':');(g[s]=g[s]||[]).push(n)});return Object.entries(g).map(([s,ns])=>s+':'+ns.join('.')).join('|')};
+function noteItems(book,keys){const out=[];book.sets.forEach(s=>s.items.forEach(([no,page,w,hh])=>{if(keys.has(s.key+':'+no))out.push({set:s,no,page,w,h:hh,img:`notes/${book.id}/${s.key}/${no}.jpg`,ans:(book.answers||{})[s.key+':'+no]||''})}));return out}
+
+function renderNotes(){
+  if(!prog._me){app.appendChild(h(`<div class="panel"><p class="hint" style="margin:0">반과 이름을 고르면 내 학년 교재의 오답노트를 만들 수 있어요.</p></div>`));return}
+  if(!BOOKS){app.appendChild(h(`<div class="panel"><p class="hint" style="margin:0">${booksErr?'교재 정보를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.':'교재를 불러오는 중…'}</p></div>`));loadBooks();return}
+  const g=myGrade(),books=BOOKS.filter(b=>!b.grade||!g||b.grade===g);
+  if(!books.length){app.appendChild(h(`<div class="panel"><p class="hint" style="margin:0">지금은 ${GRADE_LABEL(g)} 교재가 없어요.</p></div>`));return}
+  if(noteView&&noteView.note){const b=books.find(x=>x.id===noteView.book);if(b)return renderNoteSheet(b);}
+  if(books.length>1&&!noteView){const l=h(`<div class="exam-list"></div>`);books.forEach(b=>{const n=wrongSet(b.id).size;const c=h(`<button class="exam-card"><div class="row">${n?`<span class="chip">틀린 문제 ${n}개 표시함</span>`:''}</div><h3>${esc(b.title)}</h3><div class="meta">${b.sets.reduce((a,s)=>a+s.items.length,0)}문항</div></button>`);c.onclick=()=>{noteView={book:b.id};render()};l.appendChild(c)});app.appendChild(l);return}
+  renderPicker(noteView?books.find(b=>b.id===noteView.book)||books[0]:books[0]);
+}
+
+function renderPicker(book){
+  noteView=noteView||{book:book.id};noteView.book=book.id;
+  const sel=wrongSet(book.id);
+  const p=h(`<section class="panel"><div class="row" style="justify-content:space-between"><h2>${esc(book.title)}</h2><span class="hint">${esc(myName())}</span></div>
+    <p class="hint" style="margin:0">틀린 문제 번호만 눌러서 빨갛게 표시하세요. 표시한 내용은 저절로 저장돼서, 나갔다가 다시 들어와도 그대로 있어요.</p><div class="sets"></div></section>`);
+  const box=p.querySelector('.sets');
+  const openKey='dabogi.open.'+book.id;let open={};try{open=JSON.parse(localStorage.getItem(openKey)||'{}')}catch(e){}
+  book.sets.forEach(s=>{const cnt=s.items.filter(([no])=>sel.has(s.key+':'+no)).length;
+    const d=h(`<details class="nset" ${open[s.key]||cnt?'open':''}><summary><span>${esc(s.title)}</span><span class="hint">${s.items[0][0]}~${s.items[s.items.length-1][0]}번 · ${s.pages[0]}~${s.pages[1]}쪽</span><b class="ncnt" ${cnt?'':'hidden'}>${cnt}</b></summary><div class="ngrid"></div></details>`);
+    d.addEventListener('toggle',()=>{open[s.key]=d.open;try{localStorage.setItem(openKey,JSON.stringify(open))}catch(e){}});
+    const gr=d.querySelector('.ngrid');
+    s.items.forEach(([no,page])=>{const k=s.key+':'+no;const b=h(`<button type="button" class="nb" aria-pressed="${sel.has(k)}" title="${page}쪽">${no}</button>`);
+      b.onclick=()=>{sel.has(k)?sel.delete(k):sel.add(k);b.setAttribute('aria-pressed',sel.has(k));saveWrong(book.id,sel);
+        const c=s.items.filter(([n])=>sel.has(s.key+':'+n)).length,cb=d.querySelector('.ncnt');cb.textContent=c;cb.hidden=!c;upd()};gr.appendChild(b)});
+    box.appendChild(d)});
+  const BT=btItems(),off=btOff();
+  if(BT.length){const bp=h(`<section class="panel"><div class="row" style="justify-content:space-between"><h2>블라인드 테스트에서 틀린 문제</h2><span class="hint">자동으로 함께 들어가요</span></div><p class="hint" style="margin:0">통과한 블라인드 테스트에서 한 번이라도 틀렸던 문제예요. 빼고 싶은 문제만 눌러서 끄세요.</p><div class="btsets"></div></section>`);
+    const byEx={};BT.forEach(x=>(byEx[x.e]=byEx[x.e]||{t:x.t,items:[]}).items.push(x));
+    Object.values(byEx).forEach(g=>{const d=h(`<div class="btset"><div class="label">${esc(g.t)}</div><div class="ngrid"></div></div>`);
+      g.items.forEach(x=>{const b=h(`<button type="button" class="nb" aria-pressed="${!off.has(x.k)}">${x.q}</button>`);
+        b.onclick=()=>{off.has(x.k)?off.delete(x.k):off.add(x.k);prog._btoff=[...off];saveProg();b.setAttribute('aria-pressed',!off.has(x.k));upd()};d.querySelector('.ngrid').appendChild(b)});
+      bp.querySelector('.btsets').appendChild(d)});
+    app.appendChild(bp)}
+  app.appendChild(p);
+  const hist=(prog._notes||[]).filter(n=>n.book===book.id).slice(-5).reverse();
+  if(hist.length){const hp=h(`<section class="panel"><span class="label">내가 만든 오답노트</span><div class="tlist"></div></section>`);
+    hist.forEach(n=>{const it=h(`<div class="titem"><div><strong>${fmtTime(n.t)}</strong><div class="hint">${n.keys.length+(n.bt||[]).length}문제</div></div><button class="btn ghost small">다시 보기</button></div>`);
+      it.querySelector('button').onclick=()=>{noteView={book:book.id,note:n};render();scrollTo(0,0)};hp.querySelector('.tlist').appendChild(it)});app.appendChild(hp)}
+  const bar=h(`<div class="nbar"><span id="ncount"></span><button class="btn ghost small" id="nclear">모두 지우기</button><button class="btn" id="nmake">오답노트 만들기</button></div>`);
+  app.appendChild(bar);
+  const btOn=()=>BT.filter(x=>!off.has(x.k));
+  const upd=()=>{const n=sel.size,m=btOn().length;bar.querySelector('#ncount').innerHTML=`틀린 문제 <b>${n+m}</b>개${m?` <span class="hint">(블라인드 ${m}개 포함)</span>`:''}`;bar.querySelector('#nmake').disabled=!(n+m);bar.querySelector('#nclear').hidden=!n};upd();
+  let armed=false;const cl=bar.querySelector('#nclear');
+  cl.onclick=()=>{if(!armed){armed=true;cl.textContent='한 번 더 누르면 지워요';setTimeout(()=>{armed=false;cl.textContent='모두 지우기'},3000);return}sel.clear();saveWrong(book.id,sel);render()};
+  bar.querySelector('#nmake').onclick=()=>{const keys=[...sel];const note={id:Date.now().toString(36),t:Date.now(),book:book.id,keys,bt:btOn()};
+    prog._notes=prog._notes||[];prog._notes.push(note);prog._notes=prog._notes.slice(-30);saveProg();
+    sendNote(book,note);noteView={book:book.id,note};render();scrollTo(0,0)};
+}
+
+function sendNote(book,note){if(!EP||!prog._me)return;
+  const nAll=note.keys.length+(note.bt||[]).length;const ev={ev:'note',cls:prog._me.cls,name:prog._me.name,examId:book.id,examTitle:book.title,total:nAll,wrongCount:nAll,at:note.t,session:'n'+note.id,device,activeSec:0,extra:JSON.stringify({b:book.id,s:encSel(note.keys),bt:(note.bt||[]).map(x=>x.e+':'+x.q+'='+x.ans).join('|')}).slice(0,1990)};
+  queue.push(ev);saveQ();flush()}
+
+function renderNoteSheet(book){
+  const note=noteView.note,items=noteItems(book,new Set(note.keys)).concat((note.bt||[]).map(x=>({bt:true,set:{title:'블라인드 테스트 · '+x.t},no:x.q,page:'',img:x.img,ans:x.ans,t:x.t})));
+  const top=h(`<section class="panel"><div class="row" style="justify-content:space-between"><div><h2>오답노트</h2><div class="hint">${esc(book.title)} · ${esc(myName())} · ${fmtTime(note.t)} · ${items.length}문제</div></div><button class="btn ghost small" id="nback">← 번호 다시 고르기</button></div>
+    <p class="hint" style="margin:0">${EP?'선생님이 이 오답노트를 PDF로 받을 수 있어요. ':''}문제를 다시 풀어 보고, 맨 아래 빠른 정답으로 확인하세요.</p></section>`);
+  top.querySelector('#nback').onclick=()=>{noteView={book:book.id};render();scrollTo(0,0)};
+  app.appendChild(top);
+  /* 블라인드 테스트 시험지(매쓰플랫) 모양의 오답노트 */
+  const pad2=k=>String(k).padStart(2,'0');
+  const paper=h(`<section class="mfp"><div class="mfp-strip"></div><div class="mfp-head"><div class="mfp-tab"><b>오답노트</b><span>${items.length}문제 | 페르마 수학학원</span></div><div class="mfp-title"><h2>${esc(myName())} 오답노트</h2><p>${esc(book.title)} · ${fmtTime(note.t)}</p><div class="mfp-name">이름 <u>${esc(myName())}</u></div></div></div><div class="mfp-body"></div><div class="mfp-foot"><b>01</b><i></i></div></section>`);
+  const body=paper.querySelector('.mfp-body');
+  items.forEach((it,i)=>{
+    body.appendChild(h(`<article class="mfq"><div class="mfq-tag"><span class="mfq-pill${it.bt?' bt':''}">${it.bt?esc(it.t)+' ':it.page+'쪽 '}${esc(it.no)}번</span><span class="mfq-unit">| ${esc(it.set.title)}</span></div><div class="mfq-row"><b class="mfq-no">${pad2(i+1)}</b><img loading="lazy" src="${it.img}" alt="${esc(it.no)}번 문제"${it.w?` width="${it.w}" height="${it.h}"`:''}></div><div class="mfq-solve"></div></article>`))});
+  app.appendChild(paper);
+  const ans=h(`<section class="mfp mfp-ans"><div class="mfp-strip"></div><div class="mfp-ansbar"><h2>빠른정답</h2><button class="btn small" id="nshow">정답 보기</button></div><div class="mfa" hidden>${items.map((it,i)=>`<div class="mfa-c"><b>${pad2(i+1)}</b><small>${it.bt?esc(it.t)+' ':it.page+'쪽 '}${esc(it.no)}번</small><span>${it.ans?ansHtml(it.ans):'<span class="hint">답지에 없음</span>'}</span></div>`).join('')}</div></section>`);
+  ans.querySelector('#nshow').onclick=e=>{const a=ans.querySelector('.mfa');a.hidden=!a.hidden;e.target.textContent=a.hidden?'정답 보기':'정답 숨기기'};
+  app.appendChild(ans);
+}
+const ansHtml=a=>mathView(a.replace(/\{([^}]+)\}/g,'$1')).replace(/<span class="frac">/g,'<span class="frac">');
+
+function renderHome(){
+  if(PICK)renderWho();else{
+  const p=h(`<section class="panel"><div class="field"><label class="label" for="sname">내 이름</label><input type="text" id="sname" placeholder="예: 김민준" value="${esc(prog._name||'')}"></div></section>`);
+  p.querySelector('#sname').oninput=e=>{prog._name=e.target.value;saveProg()};
+  app.appendChild(p)}
+  const g=myGrade();
+  if(PICK&&!prog._me&&STATE.hub){app.appendChild(h(`<div class="panel"><p class="hint" style="margin:0">반과 이름을 고르면 내 학년 시험이 나와요.</p></div>`));return}
+  const shown=STATE.exams.filter(examVisible);
+  if(!shown.length){app.appendChild(h(`<div class="panel"><p class="hint" style="margin:0">${STATE.exams.length&&g?`지금은 ${GRADE_LABEL(g)} 시험이 없어요. 선생님이 시험을 올리면 여기에 나타나요.`:'아직 올라온 시험이 없어요. 선생님이 시험을 올리면 여기에 나타나요.'}</p></div>`));return}
+  if(g)app.appendChild(h(`<div class="label">${GRADE_LABEL(g)} 시험 ${shown.length}개</div>`));
+  const list=h(`<div class="exam-list"></div>`);
+  shown.forEach(ex=>{const pr=prog[ex.id];const sd=srvDone(ex);const done=(pr&&pr.done)||(sd&&sd.at);
+    const nq=ex.n||(ex.hashes&&ex.hashes.length)||0,np=ex.np!=null?ex.np:(ex.images||[]).length;
+    const c=h(`<button class="exam-card${done?' passed':''}">${done?stamp(done):''}<div class="row">${ex.sample?'<span class="chip ex">예시</span>':''}${ex.grade&&!STATE.hub?`<span class="chip ex">${GRADE_LABEL(ex.grade)}</span>`:''}${done?'':pr&&pr.attempts&&pr.attempts.length?`<span class="chip">${pr.attempts.length}회 채점함</span>`:''}</div><h3>${esc(ex.title)}</h3><div class="meta">${nq}문항 · 시험지 ${np}장</div></button>`);
+    c.onclick=()=>{if(PICK?!prog._me:!norm(prog._name)){toast(PICK?'반과 이름을 먼저 골라 주세요':'이름을 먼저 적어 주세요');const f=document.getElementById('sname')||document.getElementById('wname');f&&f.focus();return}
+      if(ex.link){location.href=ex.link;return}view.exam=ex.id;render();scrollTo(0,0)};list.appendChild(c)});
+  app.appendChild(list);
+}
+
+const qn=(ex,i)=>(ex.start||1)+i;
+const stamp=t=>{const d=t?new Date(t):null;return `<div class="stamp" aria-label="통과"><b>통과</b>${d?`<small>${d.getMonth()+1}.${d.getDate()}</small>`:''}</div>`};
+const CIRC=['','①','②','③','④','⑤'];
+/* Question types: stored by the teacher page; for older exams, a pair of identical hashes means "③|3" (multiple choice). */
+function qtypes(ex){if(Array.isArray(ex.types)&&ex.types.length===ex.hashes.length)return ex.types;
+  return ex.hashes.map(h=>h.length>=2&&h.every(x=>x===h[0])?'mc':'sa')}
+function keyTypes(key){return key.map(k=>{const alt=k.split('|')[0];const c=(alt.match(/[①②③④⑤]/g)||[]).length;return c>=2?'mcm':c===1||/^\s*[1-5]\s*\|\s*[①②③④⑤]\s*$/.test(k)?'mc':'sa'})}
+/* Multiple-answer choice keys are stored as sorted digits "2,4", which is what the student's buttons produce */
+function mcmCanon(a){const d=[...new Set((String(a).normalize('NFKC').match(/[1-5]/g)||[]))].sort();return d.join(',')}
+const TYPE_LABEL={sa:'주관식',mc:'객관식',mcm:'복수 정답'};
+/* [label, text inserted, aria name, caret steps back] */
+const MKEYS=[['a/b','/','분수'],['x²','^2','제곱'],['xⁿ','^','거듭제곱'],['√','√','루트'],['( )','()','괄호',1],['−','-','빼기'],['π','π','파이'],['±','±','플러스마이너스'],['x','x','x'],['y','y','y'],['a','a','a'],['≤','≤','작거나 같다'],['≥','≥','크거나 같다'],['°','°','도'],[':',':','비 (쌍점)'],[',',',','쉼표'],['⌫','⌫','지우기']];
+function mathInner(t){return t.replace(/√\(([^()]*)\)/g,'√<span class="rt">$1</span>').replace(/√([0-9a-zπ.]+)/gi,'√<span class="rt">$1</span>')
+  .replace(/\^\(([^()]*)\)/g,'<sup>$1</sup>').replace(/\^(-?[0-9a-zπ]+)/gi,'<sup>$1</sup>')}
+function mathView(v){let t=esc(String(v||''));if(!t)return '';
+  const OP='(\\([^()]+\\)|√?[0-9a-zπ.]+(?:\\^-?[0-9a-z]+)?)';const strip=x=>/^\(.*\)$/.test(x)?x.slice(1,-1):x;
+  t=t.replace(new RegExp(OP+'/'+OP,'gi'),(m,p,q)=>`<span class="frac"><span>${mathInner(strip(p))}</span><span>${mathInner(strip(q))}</span></span>`);
+  return mathInner(t).replace(/-/g,'−')}
+function renderWho(){
+  if(prog._me){const p=h(`<section class="panel"><div class="row" style="justify-content:space-between"><div><div class="label">내 이름</div><strong style="font-size:18px">${esc(prog._me.cls)} ${esc(prog._me.name)}</strong></div><button class="btn ghost small" id="wchange">다른 이름으로 바꾸기</button></div><p class="hint" style="margin:0">${EP?'채점 기록은 선생님께 저장돼요.':'이 화면은 미리보기라 기록이 저장되지 않아요.'}${queue.length?` 아직 보내지 못한 기록 ${queue.length}개는 인터넷이 연결되면 자동으로 보내요.`:''}</p></section>`);
+    p.querySelector('#wchange').onclick=()=>{setMe(null);render()};app.appendChild(p);return}
+  const R=Array.isArray(STATE.roster)?STATE.roster:[];
+  if(R.length){
+    const classes=[...new Set(R.map(r=>r.cls))];
+    const p=h(`<section class="panel"><div class="krow"><div class="field"><label class="label" for="wcls">반</label><select id="wcls"><option value="">반을 골라요</option>${classes.map(c=>`<option>${esc(c)}</option>`).join('')}</select></div><div class="field" style="flex:2 1 160px"><label class="label" for="wname">이름</label><select id="wname" disabled><option value="">먼저 반을 골라요</option></select></div></div><div class="row"><button class="btn" id="wok" disabled>이 이름으로 시작</button><span class="hint">내 반과 이름을 골라요. 목록에 내 이름이 없으면 선생님께 말해 주세요.</span></div></section>`);
+    const cs=p.querySelector('#wcls'),ns=p.querySelector('#wname'),ok=p.querySelector('#wok');
+    if(classes.length===1){cs.value=classes[0]}
+    const fill=()=>{const list=R.filter(r=>r.cls===cs.value);ns.disabled=!list.length;ns.innerHTML=list.length?'<option value="">이름을 골라요</option>'+list.map(r=>`<option>${esc(r.name)}</option>`).join(''):'<option value="">먼저 반을 골라요</option>';ok.disabled=true};
+    cs.onchange=fill;ns.onchange=()=>{ok.disabled=!ns.value};fill();
+    ok.onclick=()=>{if(!cs.value||!ns.value)return;setMe({cls:cs.value,name:ns.value});render()};
+    app.appendChild(p);return}
+  const p=h(`<section class="panel"><div class="krow"><div class="field"><label class="label" for="wcls">반</label><input type="text" id="wcls" placeholder="예: 2-1" autocomplete="off"></div><div class="field" style="flex:2 1 160px"><label class="label" for="wname">이름</label><input type="text" id="wname" placeholder="예: 김민준" autocomplete="off"></div></div><div class="row"><button class="btn" id="wok">확인</button><span class="hint" id="wmsg">선생님 명단에 있는 반과 이름을 적어요.</span></div></section>`);
+  const go=async()=>{const cls=p.querySelector('#wcls').value.trim(),name=p.querySelector('#wname').value.trim(),msg=p.querySelector('#wmsg');
+    if(!name){msg.textContent='이름을 적어 주세요.';return}
+    p.querySelector('#wok').disabled=true;msg.textContent='명단에서 찾는 중…';
+    try{const r=await(await fetch(EP+'?action=check&cls='+encodeURIComponent(cls)+'&name='+encodeURIComponent(name))).json();
+      if(r.ok){setMe({cls:r.cls,name:r.name});render();return}
+      msg.textContent=r.error==='empty_roster'?'선생님이 아직 명단을 등록하지 않았어요.':'명단에 없는 이름이에요. 반과 이름을 다시 확인해 주세요.'}
+    catch(e){msg.textContent='인터넷 연결을 확인하고 다시 눌러 주세요.'}
+    p.querySelector('#wok').disabled=false};
+  p.querySelector('#wok').onclick=go;p.querySelector('#wname').onkeydown=e=>{if(e.key==='Enter')go()};
+  app.appendChild(p)}
+
+function renderExam(ex){
+  if(!ex){view.exam=null;return render()}
+  if(!examVisible(ex)){if(STATE.hubLink){location.replace(STATE.hubLink);return}view.exam=null;return render()}
+  {const sd=srvDone(ex);if(sd&&!(prog[ex.id]&&prog[ex.id].done)){prog[ex.id]=remotePr(ex,sd);saveProg()}}
+  const pr=prog[ex.id]||(prog[ex.id]={answers:Array(ex.hashes.length).fill(''),attempts:[],start:Date.now(),done:null});
+  const back=h(`<button class="btn ghost small back">← 시험 목록</button>`);back.onclick=()=>{sessEnd();if(STATE.hubLink){location.href=STATE.hubLink;return}view.exam=null;render()};app.appendChild(back);
+  if(!pr.done)sessStart(ex);
+  if(pr.done) return renderCert(ex,pr);
+  const lay=h(`<div class="exam-layout"><div class="exbar"><div style="min-width:0"><div class="exbar-t">${esc(ex.title)}</div><div class="hint">${esc(myName())} · ${ex.hashes.length}문항${ex.pdf?` · <a class="pdflink" href="${esc(ex.pdf)}" download="${esc(ex.title)}.pdf" target="_blank" rel="noopener">🖨 프린트용 PDF 받기</a>`:''}</div></div>${ex.images.length?`<button class="btn sheetbtn" id="opensheet" type="button">시험지 보기 <small>${ex.images.length}${ex.pageLabel?"문제":"쪽"}</small></button>`:''}</div>
+  <div class="sheetview" id="sheetview" hidden role="dialog" aria-modal="true" aria-label="시험지"><div class="sv-bar"><strong>${esc(ex.title)}</strong><span class="hint" id="svpage"></span>${ex.pdf?`<a class="btn ghost small" href="${esc(ex.pdf)}" download="${esc(ex.title)}.pdf" target="_blank" rel="noopener">PDF 받기</a>`:''}<button class="btn" id="closesheet" type="button">답안지로 돌아가기</button></div><div class="sv-body"><div class="sheet-imgs"></div><p class="hint" style="text-align:center">두 손가락으로 벌리면 크게 볼 수 있어요.</p></div></div>
+  <section class="panel answers"><div class="row" style="justify-content:space-between"><span class="label">답안지</span>${ex.images.length?'':'<span class="hint">종이 시험지를 보고 답을 적어요</span>'}</div><div class="ans-grid"></div><div class="mkeys" id="mkeys" hidden></div><div id="vbox"></div><div class="rules" id="rules"><strong>채점 규칙</strong><span>다 맞을 때까지 몇 번이든 채점할 수 있지만, 틀리면 다음 채점까지 기다려야 해요.</span><div class="rsteps">${[1,2,3,4,5].map(n=>`<span><b>${n}차 후</b>${waitMin(n)}분</span>`).join('')}<span><b>그다음</b>5분씩 더</span></div><span>답 하나만 바꿔 보지 말고, 처음부터 다시 풀어서 한 번에 맞히는 게 가장 빨라요.</span></div><button class="btn" id="grade">채점하기</button><p class="hint" style="margin:0">객관식은 번호를 누르고, 주관식은 칸을 누르면 나오는 수식 버튼으로 분수·제곱·루트를 넣어요. 단위(cm, 개 등)는 안 써도 돼요. 시험지는 위의 <b>시험지 보기</b>로 언제든 열 수 있어요.</p></section></div>`);
+  const imgs=lay.querySelector('.sheet-imgs');
+  const perQ=ex.pageLabel==='문제';
+  if(ex.images.length) ex.images.forEach((src,i)=>{const im=document.createElement('img');im.src=src;
+    if(perQ){const q=h(`<div class="sq"><div class="sq-n"><b>${String(qn(ex,i)).padStart(2,'0')}</b><span>${qn(ex,i)}번</span></div></div>`);im.alt=`${qn(ex,i)}번 문제`;q.appendChild(im);imgs.appendChild(q)}
+    else{im.alt=`시험지 ${i+1}쪽`;imgs.appendChild(im)}});
+  const sv=lay.querySelector('#sheetview'),svb=lay.querySelector('.sv-body');let svTop=0;
+  if(ex.images.length){
+    const open=()=>{sv.hidden=false;document.body.classList.add('noscroll');svb.scrollTop=svTop;updPage();lay.querySelector('#closesheet').focus()};
+    const close=()=>{svTop=svb.scrollTop;sv.hidden=true;document.body.classList.remove('noscroll');lay.querySelector('#opensheet').focus()};
+    const updPage=()=>{const ims=[...imgs.children];const top=svb.getBoundingClientRect().top;let k=0;ims.forEach((im,i)=>{if(im.getBoundingClientRect().top-top<140)k=i});lay.querySelector('#svpage').textContent=perQ?`${k+1}번 / ${ims.length}문제`:`${k+1} / ${ims.length}쪽`};
+    lay.querySelector('#opensheet').onclick=open;lay.querySelector('#closesheet').onclick=close;svb.addEventListener('scroll',updPage,{passive:true});imgs.querySelectorAll('img').forEach(im=>im.addEventListener('load',()=>{if(!sv.hidden)updPage()}));
+    sv.addEventListener('keydown',e=>{if(e.key==='Escape')close()});}
+  const grid=lay.querySelector('.ans-grid');
+  const types=qtypes(ex);let lastIn=null;
+  pr.answers.forEach((v,i)=>{
+    if(types[i]!=='sa'){const multi=types[i]==='mcm';const sel=new Set(String(v).split(',').filter(Boolean));
+      const a=h(`<div class="ans" role="group" aria-label="${qn(ex,i)}번${multi?' (답 여러 개)':''}"><span>${qn(ex,i)}${multi?'<small>여러 개</small>':''}</span><div class="mc">${[1,2,3,4,5].map(n=>`<button type="button" data-n="${n}" aria-pressed="${sel.has(String(n))}" aria-label="${n}번">${CIRC[n]}</button>`).join('')}</div></div>`);
+      a.querySelector('.mc').onclick=e=>{const btn=e.target.closest('button');if(!btn)return;const n=btn.dataset.n;
+        if(multi){sel.has(n)?sel.delete(n):sel.add(n)}else{const on=sel.has(n);sel.clear();if(!on)sel.add(n)}
+        a.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',sel.has(x.dataset.n)));
+        pr.answers[i]=[...sel].sort().join(',');saveProg()};
+      grid.appendChild(a)}
+    else if(ex.fields&&ex.fields[i]){const fl=ex.fields[i],parts=String(v||'').split(',');
+      const a=h(`<div class="ans"><span>${qn(ex,i)}</span><div class="sa"><div class="flds">${fl.map((f,k)=>`${k&&!f?'<span class="fsep">,</span>':''}<label class="fld">${f?`<b>${esc(f)} =</b>`:''}<input type="text" autocomplete="off" spellcheck="false" value="${esc(parts[k]||'')}" aria-label="${qn(ex,i)}번 ${f?esc(f):(k+1)+'번째 칸'}"></label>`).join('')}</div></div></div>`);
+      const ins=[...a.querySelectorAll('input')];
+      ins.forEach(inp=>{inp.oninput=()=>{pr.answers[i]=ins.map(x=>x.value.replace(/,/g,'')).join(',');saveProg()};inp.onfocus=()=>{lastIn=inp;mk.hidden=false}});
+      grid.appendChild(a)}
+    else{const a=h(`<label class="ans"><span>${qn(ex,i)}</span><div class="sa"><input type="text" id="a${i}" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(v)}"><div class="mprev" aria-hidden="true"></div></div></label>`);
+      const inp=a.querySelector('input'),pv=a.querySelector('.mprev');pv.innerHTML=mathView(v);
+      inp.oninput=()=>{pr.answers[i]=inp.value;pv.innerHTML=mathView(inp.value);saveProg()};
+      inp.onfocus=()=>{lastIn=inp;mk.hidden=false};
+      grid.appendChild(a)}});
+  const mk=lay.querySelector('#mkeys');
+  if(types.includes('sa')){
+    mk.innerHTML='<span class="lbl">수식 넣기 · 주관식 칸을 누른 뒤 사용해요</span>'+MKEYS.map((k,j)=>`<button type="button" data-j="${j}" aria-label="${k[2]}">${k[0]}</button>`).join('');
+    mk.addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.preventDefault()});
+    mk.onclick=e=>{const b=e.target.closest('button');if(!b||!lastIn)return;const k=MKEYS[+b.dataset.j];
+      if(k[1]==='⌫'){const p=lastIn.selectionStart||0,q=lastIn.selectionEnd||0;if(p===q&&p>0)lastIn.setRangeText('',p-1,p,'end');else lastIn.setRangeText('',p,q,'end')}
+      else{const p=lastIn.selectionStart??lastIn.value.length,q=lastIn.selectionEnd??p;lastIn.setRangeText(k[1],p,q,'end');if(k[3])lastIn.setSelectionRange(lastIn.selectionStart-k[3],lastIn.selectionStart-k[3])}
+      lastIn.dispatchEvent(new Event('input'));lastIn.focus()};}
+  app.appendChild(lay);
+  const gbtn=lay.querySelector('#grade'), vbox=lay.querySelector('#vbox');
+  const last=pr.attempts[pr.attempts.length-1];
+  lay.querySelector('#rules').hidden=!!last;
+  if(last) showVerdict(ex,pr,vbox,gbtn,grid,last);
+  gbtn.onclick=async()=>{
+    const blank=pr.answers.findIndex((a,i)=>!norm(a)||(ex.fields&&ex.fields[i]&&String(a).split(',').some(x=>!norm(x))));
+    if(blank>=0){toast(`${qn(ex,blank)}번 답이 비어 있어요`);const el=grid.children[blank];el.scrollIntoView({block:'center'});const f=el.querySelector('input,button');f&&f.focus();return}
+    gbtn.disabled=true;
+    const wrong=[];for(let i=0;i<ex.hashes.length;i++){if(!await matchAns(ex,i,pr.answers[i]))wrong.push(i)}
+    const at={w:wrong,a:Object.fromEntries(wrong.map(i=>[i,pr.answers[i]])),t:Date.now(),s:runSec()};pr.attempts.push(at);pr.spent=at.s;
+    logEv(wrong.length?'attempt':'done',ex,{attempt:pr.attempts.length,wrong:wrong.map(i=>qn(ex,i)).join(','),wrongCount:wrong.length,
+      extra:wrong.length?JSON.stringify({a:Object.fromEntries(wrong.map(i=>[qn(ex,i),types[i]!=='sa'?String(pr.answers[i]).split(',').map(n=>CIRC[+n]||n).join(''):String(pr.answers[i]).slice(0,40)]))}).slice(0,1990):JSON.stringify({runSec:at.s,startedAt:pr.start,attempts:pr.attempts.map(a=>({t:a.t,s:a.s,w:a.w.map(i=>qn(ex,i))}))})});
+    if(!wrong.length){pr.done=Date.now();saveProg();sessEnd();render();scrollTo(0,0);return}
+    pr.checked=[];saveProg();lay.querySelector('#rules').hidden=true;showVerdict(ex,pr,vbox,gbtn,grid,at);
+  };
+}
+
+/* Wait before the next grading: 5 min after the 1st and 2nd, then 10, 15, 20… (5 more each time) */
+const waitMin=n=>n<=2?5:(n-1)*5;
+let waitTimer=null;
+function showVerdict(ex,pr,vbox,gbtn,grid,at){
+  pr.checked=pr.checked||[];
+  clearInterval(waitTimer);
+  const until=at.t+waitMin(pr.attempts.length)*60000;
+  const v=h(`<div class="verdict bad"><div class="big">아직 다 맞지 않았어요</div><p style="margin:0">몇 번이 틀렸는지, 몇 개가 틀렸는지는 알려주지 않아요. 1번부터 끝까지 다시 확인하고 다시 채점하세요.</p><div class="wait" id="wait"><div class="wait-t"></div><div class="wait-bar"><i></i></div><p class="hint" style="margin:0">이번에는 ${waitMin(pr.attempts.length)}분을 기다려요. <strong>${pr.attempts.length+1}차 채점에서도 틀리면 다음엔 ${waitMin(pr.attempts.length+1)}분</strong>을 기다려야 해요. 기다리는 동안 처음부터 다시 풀어 보세요.</p></div><div class="vtips"><b>다시 검토할 때</b><ul>${CHECKS.map(c=>`<li>${c}</li>`).join('')}</ul><p class="hint" style="margin:0">위 답안지에서 답을 고친 뒤, 시간이 지나면 아래 채점하기를 눌러요.</p></div><div class="log"></div></div>`);
+  v.querySelector('.log').innerHTML=pr.attempts.map((a,i)=>`<b>${i+1}차 다시 확인</b>`).join('');
+  vbox.innerHTML='';vbox.appendChild(v);
+  const total=until-at.t,wt=v.querySelector('.wait-t'),wb=v.querySelector('.wait-bar i'),wbox=v.querySelector('#wait');
+  const upd=()=>{const left=until-Date.now();
+    if(left>0){const m=Math.floor(left/60000),sec=Math.floor(left%60000/1000);wt.textContent=`다음 채점까지 ${m}:${String(sec).padStart(2,'0')}`;wb.style.width=Math.round((1-left/total)*100)+'%';
+      gbtn.disabled=true;gbtn.textContent=`${m}분 ${String(sec).padStart(2,'0')}초 뒤에 채점할 수 있어요`}
+    else{clearInterval(waitTimer);wbox.hidden=true;gbtn.disabled=false;gbtn.textContent=`${pr.attempts.length+1}차 채점하기`}};
+  upd();if(until>Date.now())waitTimer=setInterval(()=>{if(!document.body.contains(gbtn)){clearInterval(waitTimer);return}upd()},1000);
+}
+
+/* ---------- crypto for the locked AI analysis ---------- */
+const hex=b=>[...b].map(x=>x.toString(16).padStart(2,'0')).join('');
+const unhex=s=>new Uint8Array(s.match(/../g).map(x=>parseInt(x,16)));
+const b64=b=>{let s='';b.forEach(x=>s+=String.fromCharCode(x));return btoa(s)};
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const xor=(a,b)=>a.map((x,i)=>x^b[i]);
+async function kdf(salt,i,v){return new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode('k|'+salt+'|'+i+'|'+norm(v))))}
+async function lockAnalysis(salt,alts,obj){
+  const master=crypto.getRandomValues(new Uint8Array(32));
+  const shares=alts.map(()=>crypto.getRandomValues(new Uint8Array(32)));
+  shares[shares.length-1]=shares.slice(0,-1).reduce((acc,s)=>xor(acc,s),master);
+  const wraps=[];for(let i=0;i<alts.length;i++){const w=[];for(const a of alts[i])w.push(hex(xor(shares[i],await kdf(salt,i,a))));wraps.push(w)}
+  const key=await crypto.subtle.importKey('raw',master,'AES-GCM',false,['encrypt']);
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(obj))));
+  return {wraps,iv:b64(iv),ct:b64(ct)};
+}
+async function unlockAnalysis(ex,answers){
+  if(!ex.lock)return null;
+  try{let master=new Uint8Array(32);
+    for(let i=0;i<ex.hashes.length;i++){const m=await matchAns(ex,i,answers[i]);if(!m)return null;
+      master=xor(master,xor(unhex(ex.lock.wraps[i][m.j]),await kdf(ex.salt,i,m.v)))}
+    const key=await crypto.subtle.importKey('raw',master,'AES-GCM',false,['decrypt']);
+    const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(ex.lock.iv)},key,unb64(ex.lock.ct));
+    return JSON.parse(new TextDecoder().decode(pt));
+  }catch(e){return null}
+}
+const TYPES=['문제를 잘못 읽음','조건을 놓침','계산 실수','부호 실수','옮겨 적기 실수','개념 부족'];
+
+const APPMODE=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const KAKAO_KEY='bd7ba39377d1819561c48f3a2b684a7d',SITE='https://fermat-math.github.io/blindtest/';
+let kakaoP=null;
+/* 휴대폰으로 한눈에 보는 보고서 링크 (report.html, 내용은 주소 안에 압축해서 담아요) */
+const b64u=u=>{let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
+async function reportUrl(data){const json=JSON.stringify(data);let s='',m='j';
+  try{if(window.CompressionStream){const cs=new CompressionStream('deflate-raw');s=b64u(new Uint8Array(await new Response(new Blob([json]).stream().pipeThrough(cs)).arrayBuffer()));m='z'}}catch(e){s=''}
+  if(!s){s=b64u(new TextEncoder().encode(json));m='j'}
+  return SITE+'report.html#d='+m+s}
+function loadKakao(){if(kakaoP)return kakaoP;
+  kakaoP=new Promise((res,rej)=>{if(window.Kakao){res();return}const sc=document.createElement('script');sc.src='https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';sc.crossOrigin='anonymous';sc.onload=()=>res();sc.onerror=()=>{kakaoP=null;rej(new Error('kakao'))};document.head.appendChild(sc)})
+    .then(()=>{if(!Kakao.isInitialized())Kakao.init(KAKAO_KEY)});
+  kakaoP.catch(()=>{});return kakaoP}
+function renderCert(ex,pr){
+  /* ONE REPORT 양식: 표지 → RESULT 진단결과 → ASSESSMENT 학습평가 (내용은 이전 보고서와 같아요) */
+  const everWrong=[...new Set(pr.attempts.flatMap(a=>a.w))].sort((a,b)=>a-b);
+  const spent=pr.spent||pr.attempts[pr.attempts.length-1].s||Math.round((pr.done-pr.start)/1000);
+  const hist=(prog._hist&&prog._hist[ex.id])||[];
+  const N=ex.hashes.length,att=pr.attempts,pad2=k=>String(k).padStart(2,'0');
+  const firstScore=Math.round((N-att[0].w.length)/N*100);
+  const dd=new Date(pr.done),dateTxt=`${dd.getFullYear()}/${pad2(dd.getMonth()+1)}/${pad2(dd.getDate())}`;
+  const me=prog._me||{},g=gradeOf(me.cls);
+  const fixedAt=q=>{let last=-1;att.forEach((a,i)=>{if(a.w.includes(q))last=i});return last+2};  /* 몇 차에 맞혔는지 */
+  /* 회차별 정답률 꺾은선 */
+  const pts=att.map(a=>Math.round((N-a.w.length)/N*100));
+  const lo=Math.max(0,Math.floor((Math.min(...pts)-10)/10)*10),W=innerWidth<520?340:600,H=innerWidth<520?190:230,L=34,R=22,T=24,B=32;
+  const px=i=>att.length===1?(L+(W-L-R)/2):L+i*(W-L-R)/(att.length-1),py=v=>T+(100-v)/(100-lo||1)*(H-T-B);
+  const grid=[0,1,2,3,4].map(k=>{const v=Math.round(lo+(100-lo)*k/4);return `<line x1="${L}" x2="${W-R}" y1="${py(v)}" y2="${py(v)}" stroke="#ececec"/><text x="${L-8}" y="${py(v)+4}" text-anchor="end" font-size="11" fill="#9a9a9a">${v}</text>`}).join('');
+  const chart=`<svg viewBox="0 0 ${W} ${H}" class="or-chart" role="img" aria-label="회차별 정답률">${grid}<line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="#333"/>
+    <polyline fill="none" stroke="#1ea7ff" stroke-width="2.5" points="${pts.map((v,i)=>`${px(i)},${py(v)}`).join(' ')}"/>
+    ${pts.map((v,i)=>`<circle cx="${px(i)}" cy="${py(v)}" r="4.5" fill="#1ea7ff"/><text x="${px(i)}" y="${py(v)-10}" text-anchor="middle" font-size="12" fill="#1ea7ff" font-weight="700">${v}%</text><text x="${px(i)}" y="${H-12}" text-anchor="middle" font-size="12" fill="#555">${i+1}차</text>`).join('')}</svg>`;
+  const c=h(`<section class="cert or">
+  <div class="or-cover">${stamp(pr.done)}
+    <div class="or-date">${dateTxt}</div><div class="or-tag">The secret of education lies in respecting the pupil</div>
+    <div class="or-big">ONE<br>REPORT</div>
+    <div class="or-who"><b>${esc(myName())}</b><span>${esc(me.cls||'')}${g?` · ${GRADE_LABEL(g)}`:''}</span><span>${esc(ex.title)}</span></div>
+    <p class="or-msg"><b>다 맞았어요!</b> ${everWrong.length?'틀렸던 문제를 AI가 분석했어요. 읽어 보고 이 보고서를 선생님께 보여주세요.':'한 번에 다 맞았어요. 이 화면을 선생님께 보여주세요.'}${EP?' 이 기록은 선생님께 저장됐어요.':''}${pr.remote?'<br><span class="hint">다른 기기에서 통과한 기록을 불러왔어요.</span>':''}</p>
+    <div class="or-share"><button type="button" class="or-kakao" id="kshare"><span aria-hidden="true">💬</span> 카카오톡으로 보내기</button><button type="button" class="btn ghost small" id="oshare">다른 앱으로 보내기</button><button type="button" class="btn ghost small" onclick="print()">🖨 인쇄하기</button></div>
+    <img class="or-logo" src="https://fermat-math.github.io/blindtest/assets/fermat-logo.png" alt="페르마 수학학원" onerror="this.remove()">
+  </div>
+  <div class="or-sec"><div class="or-run">one report</div><h2 class="or-h">RESULT <small>진단결과</small></h2>
+    <div class="or-score"><div><span class="o">채점 횟수</span><b class="o">${att.length}</b><em>회</em></div><i></i><div><span>첫 채점 점수</span><b>${firstScore}</b><em>점</em></div></div>
+    <div class="or-meta"><div class="or-meta-h">블라인드 테스트</div><dl><div><dt>이름</dt><dd>${esc(myName())}</dd></div><div><dt>처음 시작</dt><dd>${fmtTime(pr.start)}</dd></div><div><dt>다 맞힌 시각</dt><dd>${fmtTime(pr.done)}</dd></div><div><dt>실제로 푼 시간</dt><dd>${fmtDur(spent)}</dd></div><div><dt>채점 횟수</dt><dd>${att.length}회</dd></div><div><dt>한 번이라도 틀린 문제</dt><dd>${everWrong.length}문항 / ${N}문항</dd></div></dl></div>
+    <h3 class="or-t">회차별 정답률</h3>${chart}
+    <div class="or-rounds">${att.map((a,i)=>`<div class="or-round"><b>${i+1}차</b><span class="or-rt">${fmtTime(a.t)}${a.s!=null?` · ${fmtDur(a.s)}째`:''}</span><span class="or-rq">${a.w.length?a.w.map(q=>`<i class="or-x">${qn(ex,q)}번</i>`).join(''):'<i class="or-ok">모두 정답</i>'}</span></div>`).join('')}</div>
+    <p class="or-note">"○분째"는 처음 시작한 뒤 이 화면을 실제로 보고 있던 시간을 더한 거예요.</p>
+    <div class="or-types"><div><h3 class="or-t b">대표 우수 유형</h3><div class="or-tl" id="orgood"></div></div><div><h3 class="or-t o">대표 취약 유형</h3><div class="or-tl" id="orweak"></div></div></div>
+    <h3 class="or-t">문항별 진단</h3><div class="or-items">${ex.hashes.map((_,q)=>{const w=everWrong.includes(q),f=w?fixedAt(q):1;return `<div class="or-item"><span class="or-qn${w?' o':''}">${qn(ex,q)}번</span><span class="or-cn" data-q="${q}"></span><span class="or-mk ${w?'x':'ok'}" aria-label="${w?'틀린 적 있음':'한 번에 정답'}"></span><span class="or-bar"><i style="width:${Math.round(100/f)}%"></i></span><span class="or-pc">${w?`${f}차에 고침`:'1차 정답'}</span></div>`}).join('')}</div>
+  </div>
+  <div class="or-sec"><div class="or-run">one report</div><h2 class="or-h">ASSESSMENT <small>학습평가</small></h2>
+    <div class="or-purpose"><b>평가목적</b><span>틀린 개수를 알려 주지 않는 블라인드 테스트로 처음부터 다시 검토하는 습관을 기르고, 틀렸던 문제의 원인을 분석해 다음 시험의 검토 방향을 세워요.</span></div>
+    <div class="or-sum-h">summary <small>평가결과요약</small></div>
+    <div class="or-sum"><div><span>첫 채점 정답률</span><b>${firstScore}<em>%</em></b></div><div><span>최종 정답률</span><b>100<em>%</em></b></div><div><span>채점 횟수</span><b>${att.length}<em>회</em></b></div><div><span class="o">틀렸던 문제</span><b class="o">${everWrong.length}<em>문항</em></b></div></div>
+    <div class="summary" hidden></div><div class="why"></div>
+    ${hist.length?`<h3 class="or-t">이전에 푼 기록</h3><div class="or-rounds">${hist.map((r,i)=>`<div class="or-round"><b>${i+1}번째</b><span class="or-rt">${fmtTime(r.start)} 시작 · ${r.done?`${r.attempts.length}회 만에 완료 · ${fmtDur(r.spent)}`:'끝내지 않음'}</span></div>`).join('')}</div>`:''}
+    <div class="row or-again"><button class="btn ghost small" id="retry">한 번 더 풀어 보기</button><span class="hint">지금 기록은 지워지지 않고 "이전에 푼 기록"에 남아요.</span></div>
+  </div></section>`);
+  let whyData={};
+  const repData=()=>({v:1,n:myName(),c:me.cls||'',e:ex.id,t:ex.title,N,st:ex.start||1,a:att.map(a=>[a.t,a.s,a.w.map(q=>qn(ex,q))]),d:pr.done,sp:spent,w:whyData});
+  /* 카카오톡 / 다른 앱으로 결과 보내기 */
+  const shareTxt=`[페르마 수학학원 블라인드 테스트]\n${myName()} · ${ex.title}\n첫 채점 ${firstScore}점 → ${att.length}회 만에 모두 정답\n틀렸던 문제 ${everWrong.length?everWrong.map(q=>qn(ex,q)+'번').join(', '):'없음'}\n실제로 푼 시간 ${fmtDur(spent)} · ${fmtTime(pr.done)}`;
+  loadKakao();
+  c.querySelector('#kshare').onclick=async()=>{
+    if(APPMODE&&navigator.share){otherShare();return}  /* 홈 화면 앱에서는 카카오 공유창이 막혀서(4019) 휴대폰 공유창으로 보내요 */
+    try{await loadKakao();
+      const ru=await reportUrl(repData());
+      Kakao.Share.sendDefault({objectType:'feed',content:{title:`${myName()} · ${ex.title} 블라인드 테스트 통과`,description:`첫 채점 ${firstScore}점 → ${att.length}회 만에 모두 정답 · 틀렸던 문제 ${everWrong.length}개 · ${fmtDur(spent)}`,imageUrl:'https://fermat-math.github.io/blindtest/assets/report-card.png',imageWidth:800,imageHeight:420,link:{mobileWebUrl:ru,webUrl:ru}},buttons:[{title:'보고서 보기',link:{mobileWebUrl:ru,webUrl:ru}}]});
+    }catch(e){otherShare()}};
+  const otherShare=async()=>{const ru=await reportUrl(repData());try{if(navigator.share){await navigator.share({title:'블라인드 테스트 결과',text:shareTxt+'\n\n보고서 보기: '+ru});return}}catch(e){if(e&&e.name==='AbortError')return}
+    try{await navigator.clipboard.writeText(shareTxt+'\n\n보고서 보기: '+ru);toast('결과를 복사했어요. 카카오톡에 붙여 넣으세요.')}catch(e){toast('공유를 열지 못했어요')}};
+  c.querySelector('#oshare').onclick=otherShare;
+  c.querySelector('#retry').onclick=()=>{prog._hist=prog._hist||{};(prog._hist[ex.id]=prog._hist[ex.id]||[]).push({start:pr.start,done:pr.done,spent,attempts:pr.attempts.map(a=>({t:a.t,s:a.s,w:a.w}))});
+    delete prog[ex.id];saveProg();render();scrollTo(0,0)};
+  app.appendChild(c);
+  const why=c.querySelector('.why');
+  if(everWrong.length)why.innerHTML='<p class="hint">분석을 여는 중…</p>';
+  const fillTypes=qmap=>{
+    const tag=(q,cls)=>`<div class="or-ti"><span class="or-qn${cls}">${qn(ex,q)}번</span><span>${esc((qmap[q]&&qmap[q].concept)||'')}</span></div>`;
+    const good=ex.hashes.map((_,q)=>q).filter(q=>!everWrong.includes(q)&&qmap[q]).slice(-3);
+    c.querySelector('#orgood').innerHTML=good.length?good.map(q=>tag(q,'')).join(''):'<p class="or-none">-</p>';
+    c.querySelector('#orweak').innerHTML=everWrong.length?everWrong.slice(0,3).map(q=>tag(q,' o')).join(''):'<p class="or-none">틀린 문제가 없어요</p>';
+    c.querySelectorAll('.or-cn').forEach(el=>{const A=qmap[+el.dataset.q];el.textContent=A&&A.concept?A.concept:''})};
+  unlockAnalysis(ex,pr.answers).then(an=>{
+    const qmap={};(an&&an.questions||[]).forEach(q=>qmap[(q.no|0)-(ex.start||1)]=q);
+    fillTypes(qmap);
+    everWrong.forEach(q=>{const A=qmap[q];const r=pr.attempts.map((a,i)=>a.w.includes(q)?[i+1,String((a.a&&a.a[q])||'').slice(0,30)]:null).filter(Boolean).map(m=>{const hit=A&&(A.mistakes||[]).find(x=>String(x.answer).split('|').some(v=>unitless(v)===unitless(m[1])));return hit?[m[0],m[1],hit.type,hit.reason]:[m[0],m[1],'',A?'예상한 실수 목록에 없는 답이에요.':'']});
+      whyData[qn(ex,q)]={r,tp:A&&A.tip||''}});
+    if(!everWrong.length)return;
+    why.innerHTML='<h3 class="or-t">틀렸던 문제 분석</h3>';
+    const tally={};
+    everWrong.forEach(q=>{
+      const mine=pr.attempts.map((a,i)=>a.w.includes(q)?{r:i+1,v:(a.a&&a.a[q])||''}:null).filter(Boolean);
+      const A=qmap[q];
+      const rows=mine.map(m=>{const hit=A&&(A.mistakes||[]).find(x=>String(x.answer).split('|').some(v=>unitless(v)===unitless(m.v)));
+        if(hit&&hit.type)tally[hit.type]=(tally[hit.type]||0)+1;
+        return `<div class="arow"><span class="rno">${m.r}차</span><div style="min-width:0"><div><b class="ans-w">${esc(m.v)}</b>${hit&&hit.type?` <span class="chip warn">${esc(hit.type)}</span>`:''}</div><div class="areason">${hit?esc(hit.reason):A?'예상한 실수 목록에 없는 답이에요. 아래 풀이와 내 풀이를 한 줄씩 비교해 보세요.':''}</div></div></div>`}).join('');
+      const card=h(`<div class="wcard"><div class="row" style="justify-content:space-between"><strong><span class="or-qn o">${qn(ex,q)}번</span> ${A&&A.concept?esc(A.concept):''}</strong><span class="hint">고친 답 ${esc(pr.answers[q])}</span></div>
+        ${rows}
+        ${A?`${A.solution?`<div class="ablock"><span class="label">바른 풀이</span><div>${esc(A.solution)}</div></div>`:''}${A.tip?`<div class="ablock"><span class="label">다음에 검토할 때</span><div>${esc(A.tip)}</div></div>`:''}`:'<p class="hint" style="margin:0">이 시험에는 AI 분석이 없어요. 선생님과 함께 왜 틀렸는지 확인해 보세요.</p>'}</div>`);
+      why.appendChild(card)});
+    /* 선생님 보고서용: 틀린 문제마다 내 답·실수 유형·이유를 기록으로 보내요 */
+    if(EP&&!pr.whySent&&!pr.remote){pr.whySent=true;saveProg();
+      everWrong.forEach(q=>{const A=qmap[q];const rounds=pr.attempts.map((a,i)=>a.w.includes(q)?{r:i+1,v:String((a.a&&a.a[q])||'').slice(0,40)}:null).filter(Boolean).map(m=>{const hit=A&&(A.mistakes||[]).find(x=>String(x.answer).split('|').some(v=>unitless(v)===unitless(m.v)));return Object.assign(m,hit?{ty:hit.type,re:hit.reason}:{re:A?'예상한 실수 목록에 없는 답':''})});
+        logEv('why',ex,{wrong:String(qn(ex,q)),extra:JSON.stringify({q:qn(ex,q),c:A&&A.concept||'',rounds,tip:A&&A.tip||''}).slice(0,1990)})})}
+    const ks=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+    if(EP&&!pr.reported){pr.reported=true;saveProg();logEv('report',ex,{attempt:pr.attempts.length,wrong:everWrong.map(q=>qn(ex,q)).join(','),wrongCount:everWrong.length,extra:JSON.stringify({tally,runSec:spent})})}
+    if(ks.length){const s=c.querySelector('.summary');s.hidden=false;
+      s.innerHTML=`<h3 class="or-t">나의 실수 유형</h3><div class="tally">${ks.map(([k,n])=>`<div class="trow"><span>${esc(k)}</span><span class="tbar"><i style="width:${Math.round(n/ks[0][1]*100)}%"></i></span><b>${n}번</b></div>`).join('')}</div><p class="hint" style="margin:6px 0 0">가장 많은 실수는 <strong>${esc(ks[0][0])}</strong>예요. 다음 시험에서는 이 부분부터 검토하세요.</p>`}
+  });
+}
+
+/* ---------- teacher ---------- */
+let draft={title:'',key:'',images:[],analysis:null,types:{}};
+function keyStart(t){const m=String(t||'').trim().match(/^(\d+)\s*[.):\]]/);return m?+m[1]:1}
+function parseKey(t){return t.split('\n').map(l=>l.replace(/^\s*\d+\s*[.):\]]\s*/,'').trim()).filter(Boolean)}
+function dataUrlToBlob(u){const [m,d]=u.split(',');const type=m.match(/data:([^;]+)/)[1];return new Blob([unb64(d)],{type})}
+function analysisPrompt(key,st){st=st||1;
+  return `당신은 한국 중학교 수학 교사입니다. 첨부한 이미지는 시험지이고, 아래는 각 문항의 정답입니다(| 는 같은 정답의 다른 표기).
+${key.map((k,i)=>`${st+i}번: ${k}`).join('\n')}
+
+각 문항마다 중학생이 실제로 자주 적는 오답을 3~5개 예상하고, 그 오답이 왜 나오는지 분석하세요. 오답은 학생이 답안지에 적을 그대로의 형태로 쓰세요(예: -3, 1/2, ②). 같은 오답의 다른 표기는 | 로 이으세요.
+type은 반드시 다음 중 하나: ${TYPES.join(', ')}
+reason은 학생에게 직접 말하듯 1~2문장, 풀이의 어느 단계에서 무엇을 잘못했는지 구체적으로.
+solution은 핵심 풀이 1~3줄. tip은 이 문제를 검토할 때 확인할 것 한 문장.
+이미지에서 문항을 읽을 수 없으면 concept를 "확인 필요"로 쓰고 정답만 보고 추정하세요.
+
+JSON만 출력하세요:
+{"questions":[{"no":${st},"concept":"단원/개념 짧게","solution":"...","tip":"...","mistakes":[{"answer":"...","type":"...","reason":"..."}]}]}`;
+}
+function renderTeacher(){
+  const p=h(`<section class="panel"><h2>새 시험 올리기</h2>
+  <div class="krow"><div class="field" style="flex:3 1 220px"><label class="label" for="ttitle">시험 이름</label><input type="text" id="ttitle" placeholder="예: 2-1 블라인드 2차"></div><div class="field"><label class="label" for="tgrade">학년</label><select id="tgrade"><option value="">모든 학년</option><option value="7">중1</option><option value="8">중2</option><option value="9">중3</option></select></div></div>
+  <div class="field"><label class="label" for="timg">시험지 (PDF 또는 사진, 여러 개 가능)</label><input type="file" id="timg" accept="application/pdf,image/*" multiple><span class="hint" id="imgstat"></span><div class="row"><div class="thumbs" id="thumbs"></div><button class="btn ghost small" id="tclear" hidden>시험지 모두 빼기</button></div><span class="hint">PDF는 쪽마다 이미지로 바꿔서 넣어요. AI 분석에는 시험지가 필요해요.</span></div>
+  <div class="field keybox"><label class="label" for="tkeyfile">정답지 · 빠른답지 파일 (PDF 또는 사진, 선택)</label><input type="file" id="tkeyfile" accept="application/pdf,image/*" multiple>
+    <div class="keypages" id="keypages" hidden></div>
+    <div class="krow" id="kopts" hidden><div class="field"><label class="label" for="kpage">읽을 쪽</label><input type="text" id="kpage" placeholder="예: 3 또는 3-4"></div><div class="field"><label class="label" for="krange">문항 번호</label><input type="text" id="krange" placeholder="예: 1-25"></div><div class="field" style="flex:2 1 200px"><label class="label" for="kunit">단원 이름 (여러 단원이 있을 때)</label><input type="text" id="kunit" placeholder="예: 2. 일차방정식의 활용"></div></div>
+    <div class="row" id="kgo" hidden><button class="btn ghost" id="kread">AI로 정답 읽기</button></div>
+    <span class="hint" id="keystat">빠른답지는 쪽과 문항 번호를 지정하면 훨씬 정확해요. 읽은 정답은 꼭 확인하세요.</span></div>
+  <div class="field"><label class="label" for="tkey">정답 (한 줄에 한 문제)</label><textarea id="tkey" placeholder="1. 3&#10;2. -2&#10;3. 1/2|0.5&#10;4. ③|3"></textarea><span class="hint" id="kcount"></span><div class="ktypes" id="ktypes" hidden></div><div id="kcompare" hidden></div></div>
+  <div class="field"><span class="label">AI 오답 분석</span><div class="row"><button class="btn ghost" id="tan">AI 분석 만들기</button><span class="hint" id="anstat">정답과 사진을 넣은 뒤 눌러요. 1~2분 걸려요.</span></div><div id="anprev"></div></div>
+  <div class="row"><button class="btn" id="tsave">시험 올리기</button><span class="hint">정답과 분석은 잠가서 저장해요. 학생은 모든 문제를 맞혀야 분석을 볼 수 있고, 올린 뒤에는 선생님도 정답을 다시 볼 수 없어요.</span></div></section>`);
+  const $=s=>p.querySelector(s);
+  $('#ttitle').value=draft.title;$('#tgrade').value=draft.grade||'';$('#tgrade').onchange=e=>draft.grade=e.target.value;$('#tkey').value=draft.key;
+  const showThumbs=()=>{$('#thumbs').innerHTML=draft.images.map(s=>`<img src="${s}" alt="">`).join('');$('#tclear').hidden=!draft.images.length};
+  const showPrev=()=>{const a=draft.analysis;$('#anprev').innerHTML=a?`<div class="tlist">${a.questions.map(q=>`<div class="titem"><div style="min-width:0"><strong>${q.no}번</strong> <span class="hint">${esc(q.concept||'')}</span><div class="hint">예상 오답 ${(q.mistakes||[]).map(m=>esc(m.answer)+' ('+esc(m.type)+')').join(', ')}</div></div></div>`).join('')}</div>`:''};
+  const finalTypes=()=>{const k=parseKey(draft.key);return keyTypes(k).map((t,i)=>draft.types[i]||t)};
+  const cnt=()=>{const k=parseKey(draft.key),n=k.length,s0=keyStart(draft.key),t=finalTypes(),m=t.filter(x=>x!=='sa').length;
+    const kt=$('#ktypes');kt.hidden=!n;kt.innerHTML=n?`<span class="lbl">문항 유형 · 눌러서 바꿔요 (주관식 → 객관식 → 복수 정답)</span>`+t.map((x,i)=>`<button type="button" class="kt ${x}" data-i="${i}">${s0+i}<small>${TYPE_LABEL[x]}</small></button>`).join(''):'';$('#kcount').textContent=(n?`${s0}~${s0+n-1}번 ${n}문항 인식됨 (객관식 ${m} · 주관식 ${n-m}) · `:'')+'③처럼 동그라미 번호로 적으면 객관식으로, ②,④처럼 두 개 이상이면 복수 정답으로 알아봐요. 틀리게 분류되면 아래에서 눌러 바꿔요. 같은 답의 다른 표기는 | 로 나눠요 (예: 1/2|0.5).'};
+  const invalidate=()=>{if(draft.analysis){draft.analysis=null;showPrev();$('#anstat').textContent='정답이나 사진이 바뀌어서 분석을 다시 만들어야 해요.'}};
+  showThumbs();showPrev();cnt();if(draft.analysis)$('#anstat').textContent=`${draft.analysis.questions.length}문항 분석 완료. 아래에서 확인하고 올리세요.`;
+  $('#ttitle').oninput=e=>draft.title=e.target.value;
+  $('#tkey').oninput=e=>{draft.key=e.target.value;cnt();invalidate()};
+  $('#ktypes').onclick=e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i;const cur=finalTypes()[i];const nx={sa:'mc',mc:'mcm',mcm:'sa'}[cur];draft.types[i]=nx;cnt()};
+  $('#timg').onchange=async e=>{const fs=[...e.target.files];e.target.value='';const st=$('#imgstat');
+    try{for(const f of fs){if(isPdf(f)){const pages=await pdfToImages(f,(i,n)=>st.textContent=`${f.name} 변환 중… ${i}/${n}쪽`);draft.images.push(...pages)}else draft.images.push(await shrink(f))}
+      st.textContent=`시험지 ${draft.images.length}쪽 · 약 ${mb(draft.images)}MB`}
+    catch(err){st.textContent='파일을 읽지 못했어요. 암호가 걸린 PDF인지 확인해 주세요.'}
+    showThumbs();invalidate()};
+  const kshow=()=>{const on=!!keySrc;$('#kopts').hidden=$('#kgo').hidden=$('#keypages').hidden=!on;
+    if(on)$('#keypages').innerHTML=keySrc.pages.map((p,i)=>`<button type="button" class="kp" data-i="${i}"><img src="${p.thumb}" alt=""><span>${i+1}쪽${p.text?'':' · 글자 없음'}</span></button>`).join('');};
+  $('#tkeyfile').onchange=async e=>{const fs=[...e.target.files];e.target.value='';const st=$('#keystat');
+    try{keySrc=await loadKeyFiles(fs,m=>st.textContent=m);
+      keySrc.pages.forEach(p=>{const t=document.createElement('canvas');const s2=240/p.canvas.width;t.width=240;t.height=Math.round(p.canvas.height*s2);t.getContext('2d').drawImage(p.canvas,0,0,t.width,t.height);p.thumb=t.toDataURL('image/jpeg',.7)});
+      if(keySrc.pages.length===1)$('#kpage').value='1';
+      kshow();st.textContent=`${keySrc.pages.length}쪽을 불러왔어요. 정답이 있는 쪽을 눌러 고르고, 문항 번호를 적은 뒤 "AI로 정답 읽기"를 누르세요.`}
+    catch(err){keySrc=null;kshow();st.textContent='파일을 읽지 못했어요. 암호가 걸린 PDF인지 확인해 주세요.'}};
+  $('#keypages').onclick=e=>{const b=e.target.closest('.kp');if(!b)return;$('#kpage').value=String(+b.dataset.i+1)};
+  $('#kread').onclick=async()=>{const st=$('#keystat');if(!keySrc)return;
+    const pr=parseRange($('#kpage').value)||(keySrc.pages.length===1?[1,1]:null);
+    if(!pr||pr[1]>keySrc.pages.length){toast(`읽을 쪽을 1~${keySrc.pages.length} 사이로 적어 주세요`);return}
+    const range=$('#krange').value.trim()?parseRange($('#krange').value):null;
+    if($('#krange').value.trim()&&!range){toast('문항 번호는 1-25처럼 적어 주세요');return}
+    const pages=[];for(let i=pr[0];i<=pr[1];i++)pages.push(i-1);
+    const btn=$('#kread');btn.disabled=true;
+    try{const r=await readKeyWithAI({pages,range,unit:$('#kunit').value.trim()},m=>st.textContent=m);
+      draft.key=r.lines.map((v,i)=>`${r.start+i}. ${v}`).join('\n');$('#tkey').value=draft.key;cnt();invalidate();
+      st.textContent=`${r.lines.length}문항을 읽었어요.`+(r.unsure+r.missing?` "확인 필요"로 표시된 ${r.unsure+r.missing}문항은 아래 원본을 보고 직접 고쳐 주세요.`:' 아래 원본과 한 번 비교해 주세요.');
+      const cmp=$('#kcompare');cmp.hidden=false;cmp.innerHTML=`<span class="label">원본 (${pr[0]}${pr[1]>pr[0]?'-'+pr[1]:''}쪽)</span>`+pages.map(i=>`<img class="kimg" src="${keySrc.pages[i].canvas.toDataURL('image/jpeg',.85)}" alt="정답지 ${i+1}쪽">`).join('')}
+    catch(err){const p=pages[0];const txt=keySrc.pages[p]&&keySrc.pages[p].text;
+      if(err&&err.code==='no_ai'){st.textContent=txt?'이 화면에서는 AI를 쓸 수 없어서 PDF 글자를 옮겼어요. 한 줄에 정답 하나만 남도록 정리해 주세요.':'이 화면에서는 AI를 쓸 수 없어요. 아래 칸에 직접 적어 주세요.';if(txt){draft.key=txt;$('#tkey').value=txt;cnt()}}
+      else st.textContent=err&&err.code==='not_granted'?'AI 사용을 허용하지 않아서 읽지 못했어요.':err&&err.code==='rate_limited'?'요청이 많아요. 잠시 뒤 다시 눌러 주세요.':err&&err.code==='empty'?'정답을 찾지 못했어요. 쪽 번호와 문항 번호를 확인해 주세요.':'읽지 못했어요. 다시 눌러 주세요.'}
+    btn.disabled=false};
+  $('#tclear').onclick=()=>{draft.images=[];$('#imgstat').textContent='';showThumbs();invalidate()};
+  $('#tan').onclick=async()=>{
+    const key=parseKey(draft.key);
+    if(!key.length){toast('정답을 먼저 적어 주세요');return}
+    if(!draft.images.length){toast('시험지 사진을 먼저 올려 주세요');return}
+    const sample=await window.claude?.use?.('sample');
+    if(!sample){$('#anstat').textContent='이 화면에서는 AI를 쓸 수 없어요. Claude에 로그인한 상태로 열어 주세요.';return}
+    const lim=await sample.limits().catch(()=>null);
+    if(!lim||!lim.images){$('#anstat').textContent='이 화면에서는 AI에 사진을 보낼 수 없어요.';return}
+    const btn=$('#tan');btn.disabled=true;$('#anstat').textContent='AI가 시험지를 읽고 오답을 예상하는 중… (1~2분)';
+    try{
+      const res=await sample.json(analysisPrompt(key,keyStart(draft.key)),{images:draft.images.slice(0,lim.images.maxCount).map(dataUrlToBlob),modelTier:'complex'});
+      if(!res||!Array.isArray(res.questions))throw {code:'bad'};
+      draft.analysis={questions:res.questions.slice(0,key.length)};showPrev();
+      $('#anstat').textContent=`${draft.analysis.questions.length}문항 분석 완료. 아래에서 확인하고 올리세요.`+(draft.images.length>lim.images.maxCount?` (사진은 앞의 ${lim.images.maxCount}장만 분석했어요)`:'');
+    }catch(e){$('#anstat').textContent=e&&e.code==='not_granted'?'AI 사용을 허용하지 않아서 분석하지 못했어요.':e&&e.code==='rate_limited'?'요청이 많아요. 잠시 뒤 다시 눌러 주세요.':'분석에 실패했어요. 다시 눌러 주세요.'}
+    btn.disabled=false;
+  };
+  $('#tsave').onclick=async()=>{
+    const key=parseKey(draft.key);
+    if(!draft.title.trim()){toast('시험 이름을 적어 주세요');return}
+    if(!key.length){toast('정답을 한 줄에 하나씩 적어 주세요');return}
+    const unsure=key.findIndex(k=>k.includes('확인 필요'));
+    if(unsure>=0){toast(`${unsure+1}번에 "확인 필요"가 남아 있어요. 원본을 보고 고친 뒤 올려 주세요`);return}
+    $('#tsave').disabled=true;
+    const salt=Math.random().toString(36).slice(2,10);
+    const types=finalTypes();
+    const alts=key.map((k,i)=>types[i]==='mcm'?[mcmCanon(k.split('|')[0])]:types[i]==='mc'?[...new Set(k.split('|').map(x=>(x.normalize('NFKC').match(/[1-5]/)||[x])[0]))]:k.split('|').filter(s=>norm(s)));
+    const bad=alts.findIndex((a,i)=>types[i]!=='sa'&&!a.every(x=>/^[1-5](,[1-5])*$/.test(norm(x))));
+    if(bad>=0){toast(`${keyStart(draft.key)+bad}번은 객관식인데 정답이 번호가 아니에요. 정답이나 유형을 고쳐 주세요`);$('#tsave').disabled=false;return}
+    const hashes=[];for(let i=0;i<alts.length;i++)hashes.push(await Promise.all(alts[i].map(a=>hashOf(salt,i,a))));
+    const ex={id:'e'+Date.now().toString(36),title:draft.title.trim(),salt,hashes,images:draft.images,start:keyStart(draft.key),types,grade:draft.grade?+draft.grade:undefined};
+    if(draft.analysis)ex.lock=await lockAnalysis(salt,alts,draft.analysis);
+    STATE.exams.unshift(ex);
+    if(JSON.stringify(STATE).length>14.5e6){STATE.exams.shift();$('#tsave').disabled=false;toast('저장 공간이 부족해요. 지난 시험을 지우고 다시 올려 주세요');return}
+    if(await save()){draft={title:'',key:'',images:[],analysis:null,types:{}};toast('올렸어요. 학생들에게 이 링크를 보내 주세요')}else{STATE.exams.shift();$('#tsave').disabled=false}
+  };
+  app.appendChild(p);
+  const l=h(`<section class="panel"><h2>올린 시험</h2><div class="tlist"></div></section>`);
+  const tl=l.querySelector('.tlist');
+  if(!STATE.exams.length)tl.innerHTML='<p class="hint">아직 없어요.</p>';
+  STATE.exams.forEach(ex=>{const it=h(`<div class="titem"><div><strong>${esc(ex.title)}</strong> ${ex.sample?'<span class="chip ex">예시</span>':''} ${ex.lock?'<span class="chip">AI 분석</span>':''} ${ex.grade?`<span class="chip">${GRADE_LABEL(ex.grade)}</span>`:''}<div class="hint">${ex.hashes.length}문항 · 사진 ${ex.images.length}장</div></div><div class="row"><button class="btn danger small">삭제</button></div></div>`);
+    const b=it.querySelector('button');let armed=false;
+    b.onclick=async()=>{if(!armed){armed=true;b.textContent='한 번 더 누르면 삭제';setTimeout(()=>{armed=false;b.textContent='삭제'},3000);return}
+      const idx=STATE.exams.indexOf(ex);STATE.exams.splice(idx,1);if(!(await save()))STATE.exams.splice(idx,0,ex)};
+    tl.appendChild(it)});
+  app.appendChild(l);
+}
+const isPdf=f=>f.type==='application/pdf'||/\.pdf$/i.test(f.name);
+const mb=arr=>(arr.reduce((n,s)=>n+s.length,0)*0.75/1048576).toFixed(1);
+let pdfLib=null;
+function loadPdfJs(){if(pdfLib)return pdfLib;const base='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+  pdfLib=new Promise((res,rej)=>{if(window.pdfjsLib)return res(window.pdfjsLib);const sc=document.createElement('script');sc.src=base+'pdf.min.js';
+    sc.onload=()=>{window.pdfjsLib.GlobalWorkerOptions.workerSrc=base+'pdf.worker.min.js';res(window.pdfjsLib)};sc.onerror=()=>{pdfLib=null;rej(new Error('pdfjs'))};document.head.appendChild(sc)});
+  return pdfLib}
+async function openPdf(file){const lib=await loadPdfJs();return lib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise}
+async function pdfToImages(file,onp){const doc=await openPdf(file);const out=[];
+  for(let i=1;i<=doc.numPages;i++){onp&&onp(i,doc.numPages);const pg=await doc.getPage(i);const v1=pg.getViewport({scale:1});const vp=pg.getViewport({scale:Math.min(2.5,1400/v1.width)});
+    const c=document.createElement('canvas');c.width=Math.round(vp.width);c.height=Math.round(vp.height);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
+    await pg.render({canvasContext:x,viewport:vp}).promise;out.push(c.toDataURL('image/jpeg',.72))}
+  return out}
+/* ---------- answer-key reading (빠른답지) ---------- */
+let keySrc=null; // {pages:[{img, text}]} hi-res pages kept in memory only
+async function loadKeyFiles(files,onp){const pages=[];
+  for(const f of files){
+    if(isPdf(f)){const doc=await openPdf(f);
+      for(let i=1;i<=doc.numPages;i++){onp&&onp(`${f.name} ${i}/${doc.numPages}쪽 준비 중…`);const pg=await doc.getPage(i);
+        const v1=pg.getViewport({scale:1});const vp=pg.getViewport({scale:Math.min(4,2600/v1.width)});
+        const c=document.createElement('canvas');c.width=Math.round(vp.width);c.height=Math.round(vp.height);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
+        await pg.render({canvasContext:x,viewport:vp}).promise;
+        let text='';try{text=layoutText(await pg.getTextContent(),v1)}catch(e){}
+        pages.push({canvas:c,text})}}
+    else{const c=await fileToCanvas(f,2600);pages.push({canvas:c,text:''})}}
+  return {pages}}
+function fileToCanvas(file,maxW){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(2,maxW/im.width);const c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.imageSmoothingQuality='high';x.drawImage(im,0,0,c.width,c.height);res(c)};im.onerror=rej;im.src=r.result};r.readAsDataURL(file)})}
+/* Rebuild the page's text in reading rows, keeping big horizontal gaps as column breaks */
+function layoutText(tc,vp){const items=tc.items.filter(it=>it.str&&it.str.trim()).map(it=>({s:it.str.trim(),x:it.transform[4],y:vp.height-it.transform[5],w:it.width||0}));
+  items.sort((a,b)=>a.y-b.y||a.x-b.x);const rows=[];
+  for(const it of items){const r=rows.find(r=>Math.abs(r.y-it.y)<4);if(r)r.items.push(it);else rows.push({y:it.y,items:[it]})}
+  return rows.sort((a,b)=>a.y-b.y).map(r=>{r.items.sort((a,b)=>a.x-b.x);let line='',end=null;
+    for(const it of r.items){if(end!==null)line+=(it.x-end>18?'   ‖   ':' ');line+=it.s;end=it.x+it.w}return line}).join('\n')}
+/* Whole page + 2x2 overlapping zoomed tiles, so small print survives downsizing */
+function pageImages(c,maxCount){const out=[c];if(maxCount>=5){const W=c.width,H=c.height,ov=0.08;
+  for(const [cx,cy] of [[0,0],[1,0],[0,1],[1,1]]){const x0=Math.max(0,Math.round(W*(cx*0.5-ov))),y0=Math.max(0,Math.round(H*(cy*0.5-ov)));
+    const w=Math.min(W-x0,Math.round(W*(0.5+ov))),h=Math.min(H-y0,Math.round(H*(0.5+ov)));
+    const t=document.createElement('canvas');t.width=w;t.height=h;t.getContext('2d').drawImage(c,x0,y0,w,h,0,0,w,h);out.push(t)}}
+  return out}
+const canvasBlob=c=>new Promise(r=>c.toBlob(b=>r(b),'image/png'));
+function parseRange(s){const m=String(s||'').replace(/\s/g,'').match(/^(\d+)(?:[-~](\d+))?$/);if(!m)return null;const a=+m[1],b=m[2]?+m[2]:a;return a<=b?[a,b]:[b,a]}
+function keyPrompt2(pageNo,text,range,unit,tiles){return `첨부한 이미지는 한국 중학교 수학 문제집·시험지의 "빠른 정답"(빠른답지) ${pageNo}쪽입니다.${tiles?` 첫 번째 이미지는 쪽 전체이고, 나머지 4장은 같은 쪽을 왼쪽 위·오른쪽 위·왼쪽 아래·오른쪽 아래로 확대한 조각입니다(조각끼리 조금 겹칩니다). 작은 글씨는 확대 조각에서 읽고, 위치와 단 순서는 전체 이미지로 확인하세요.`:''}
+
+빠른답지는 보통 여러 단으로 "번호 답" 칸이 빽빽하게 이어집니다. 번호와 답을 헷갈리지 않게 칸 하나씩 읽으세요.
+${unit?`이 쪽에 여러 단원이 있으면 "${unit}" 부분만 읽으세요.\n`:''}${range?`문항 번호 ${range[0]}번부터 ${range[1]}번까지만 필요합니다. 이 범위 밖은 출력하지 마세요.\n`:''}
+규칙:
+- 최종 답만 씁니다. 풀이는 빼요.
+- 객관식 동그라미 숫자는 숫자와 함께: ③|3. 답이 두 개인 객관식은 "②,④" 그대로.
+- 분수 a/b, 음수 -3, 거듭제곱 x^2, 루트 √2 처럼 씁니다. 같은 답의 다른 표기는 | 로 잇습니다 (1/2|0.5, x=6|6).
+- 글씨가 흐리거나 확실하지 않으면 sure를 false로.
+- 답이 문장·그림·서술형이라 한 줄로 정해지지 않으면 answer를 "서술형", sure를 false로.
+${text.trim()?`\n이 쪽의 PDF 글자입니다(글자 자체는 정확함, ‖ 는 단·칸 경계). 이미지와 맞춰 보며 우선 활용하세요:\n${text.slice(0,12000)}\n`:''}
+JSON만 출력: {"answers":[{"no":1,"answer":"③|3","sure":true}]}`}
+
+async function readKeyWithAI(opts,onp){
+  const sample=await window.claude?.use?.('sample');const lim=sample&&await sample.limits().catch(()=>null);
+  if(!lim||!lim.images)throw {code:'no_ai'};
+  const got={};const pagesIdx=opts.pages;
+  for(let k=0;k<pagesIdx.length;k++){const p=keySrc.pages[pagesIdx[k]];onp(`AI가 ${pagesIdx[k]+1}쪽을 읽는 중… (${k+1}/${pagesIdx.length})`);
+    const imgs=pageImages(p.canvas,lim.images.maxCount);const blobs=await Promise.all(imgs.map(canvasBlob));
+    const res=await sample.json(keyPrompt2(pagesIdx[k]+1,p.text,opts.range,opts.unit,imgs.length>1),{images:blobs,modelTier:'complex'});
+    for(const a of (res&&res.answers)||[]){const n=parseInt(a.no,10);if(!n)continue;if(opts.range&&(n<opts.range[0]||n>opts.range[1]))continue;
+      const v=String(a.answer||'').trim();if(!v)continue;if(!got[n]||(!got[n].sure&&a.sure!==false))got[n]={v,sure:a.sure!==false&&v!=='서술형'}}}
+  const nums=Object.keys(got).map(Number);if(!nums.length)throw {code:'empty'};
+  const [a,b]=opts.range||[Math.min(...nums),Math.max(...nums)];
+  const lines=[];let unsure=0,missing=0;
+  for(let n=a;n<=b;n++){const g=got[n];if(!g){lines.push('확인 필요 (못 읽음)');missing++}else if(!g.sure){lines.push('확인 필요 '+g.v);unsure++}else lines.push(g.v)}
+  return {start:a,lines,unsure,missing}}
+
+function shrink(file){return new Promise(res=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,1400/im.width);const c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.72))};im.src=r.result};r.readAsDataURL(file)})}
+async function save(){
+  if(!artifactNs){toast('이 화면에서는 저장할 수 없어요');return false}
+  const g=id=>document.getElementById(id).outerHTML;
+  const json=JSON.stringify(STATE).replace(/</g,'\\u003c');
+  const doc='<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>'
+    +'<title>블라인드 테스트</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n<link rel="preconnect" href="https://fonts.googleapis.com">\n'+g('fonts')+'\n'+g('page-style')
+    +'\n<main class="wrap" id="app"></main>\n<script type="application/json" id="state">'+json+'<\/script>\n'+g('main-script')+'</body></html>';
+  try{await artifactNs.publish(doc);return true}
+  catch(e){toast(e&&e.code==='conflict'?'다른 화면에서 먼저 저장했어요. 새로고침 후 다시 해 주세요':'저장하지 못했어요. 다시 시도해 주세요');return false}
+}
+
+render();flush();
+(async()=>{try{
+  if(!window.claude||!window.claude.use)return;
+  const [u,a]=await Promise.all([window.claude.use('user'),window.claude.use('artifact')]);
+  if(u&&a&&(await u.canEdit())){canTeach=true;artifactNs=a;if(!view.exam)render()}
+}catch(e){}})();
+})();
+</script>
+</body></html>
