@@ -546,7 +546,7 @@ function renderMain(){
   const f=h(`<section class="panel"><div class="filters">
     <div class="field"><label class="label" for="ffrom">기간 시작</label><input type="date" id="ffrom" value="${from}"></div>
     <div class="field"><label class="label" for="fto">기간 끝</label><input type="date" id="fto" value="${to}"></div>
-    <div class="row" style="justify-content:flex-end"><button class="btn ghost" id="refresh">새로 불러오기</button><button class="btn ghost" id="logout">잠그기</button></div></div>
+    <div class="row" style="justify-content:flex-end"><a class="btn ghost" href="study-test/" target="_blank" rel="noopener">⏱ 순공 타이머 (테스트)</a><button class="btn ghost" id="refresh">새로 불러오기</button><button class="btn ghost" id="logout">잠그기</button></div></div>
     <span class="hint">시험 기간에 맞춰 기간을 바꾸면 그 기간의 기록만 계산해요. 마지막 불러온 시각 ${hm(Date.now())}</span></section>`);
   f.querySelector('#ffrom').onchange=e=>{from=e.target.value;ls.set('dabogi.t.from',from);renderMain()};
   f.querySelector('#fto').onchange=e=>{to=e.target.value;ls.set('dabogi.t.to',to);renderMain()};

@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0f1b2d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="페르마 순공">
+<link rel="manifest" href="manifest.webmanifest">
+<title>페르마 순공 타이머</title>
+<style>
+:root{--bg:#0f1b2d;--card:#17263d;--line:#25395a;--ink:#eef3fb;--sub:#93a4bf;--blue:#2ea8ff;--cam:#2ea8ff;--btn:#ffb020;--red:#ff5d5d;--green:#33d17a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;overscroll-behavior:none}
+body{min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+.wrap{max-width:520px;margin:0 auto;padding:16px 16px 90px}
+h1{font-size:20px;margin:6px 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+.sub{color:var(--sub);font-size:13px}
+.row{display:flex;gap:10px;align-items:center}
+.big{font-size:44px;font-weight:800;letter-spacing:1px;font-variant-numeric:tabular-nums}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:3px 9px;border-radius:99px;background:#0b1424;color:var(--sub)}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.cam{background:var(--cam)}.btnc{background:var(--btn)}
+.split{display:flex;height:10px;border-radius:6px;overflow:hidden;background:#0b1424;margin:10px 0 6px}
+.mode{flex:1;border-radius:16px;padding:16px 10px;text-align:center;background:#0b1424;border:2px solid var(--line)}
+.mode b{display:block;font-size:17px;margin:6px 0 2px}.mode .ic{font-size:30px}
+.mode.c{border-color:var(--cam)}.mode.b{border-color:var(--btn)}
+input,select{width:100%;font:inherit;padding:13px;border-radius:12px;border:1px solid var(--line);background:#0b1424;color:var(--ink);margin:6px 0 10px}
+.primary{width:100%;padding:15px;border-radius:14px;background:var(--blue);color:#fff;font-weight:800;font-size:17px}
+.ghost{padding:9px 13px;border-radius:11px;background:#0b1424;border:1px solid var(--line);font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.chip{padding:7px 12px;border-radius:99px;background:#0b1424;border:1px solid var(--line);font-size:14px}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:#0b1424;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+.tabs button{flex:1;padding:11px 0 9px;background:none;color:var(--sub);font-size:12px}
+.tabs button.on{color:var(--ink)}.tabs button i{display:block;font-style:normal;font-size:20px}
+.seg{display:flex;background:#0b1424;border-radius:12px;padding:3px;margin-bottom:10px}
+.seg button{flex:1;padding:8px;border-radius:9px;background:none;color:var(--sub);font-size:14px}
+.seg button.on{background:var(--card);color:var(--ink);font-weight:700}
+.rk{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line)}
+.rk .n{width:30px;text-align:center;font-weight:800;color:var(--sub)}
+.rk.me{background:#1d3352;border-radius:10px}
+.rk .nm{flex:1}.rk .t{font-weight:800;font-variant-numeric:tabular-nums}
+.medal1 .n{color:#ffd24a}.medal2 .n{color:#cfd8e6}.medal3 .n{color:#e09a5c}
+.hidden{display:none!important}
+.net{font-size:12px;padding:3px 8px;border-radius:99px}
+.net.on{background:#123a27;color:var(--green)}.net.off{background:#3a1d1d;color:#ff9a9a}
+/* running screen */
+#run{position:fixed;inset:0;background:#000;z-index:20;display:flex;flex-direction:column}
+#run video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+#run .ov{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 16px) 18px calc(env(safe-area-inset-bottom) + 20px);background:linear-gradient(#000a,#0000 30%,#0000 65%,#000c)}
+#run .clock{font-size:64px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;text-shadow:0 2px 12px #000}
+#run .state{text-align:center;font-weight:700;margin-top:4px}
+#run.btnmode{background:radial-gradient(circle at 50% 35%,#2b2312,#000)}
+#run.paused .clock{opacity:.45}
+.runbtns{display:flex;gap:10px}
+.runbtns button{flex:1;padding:17px;border-radius:16px;font-weight:800;font-size:17px;background:#ffffff22;backdrop-filter:blur(8px)}
+.runbtns .stop{background:var(--red)}
+.warn{background:#ff5d5dcc;color:#fff;border-radius:14px;padding:12px;text-align:center;font-weight:700;margin-top:10px}
+.modal{position:fixed;inset:0;background:#000b;z-index:40;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal .box{background:var(--card);border-radius:20px;padding:22px;max-width:380px;width:100%;text-align:center}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}
+.cal div{aspect-ratio:1;border-radius:6px;font-size:11px;display:flex;align-items:center;justify-content:center;color:#fff8}
+.list .it{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.tip{font-size:13px;color:var(--sub);line-height:1.6}
+.tip b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="run" class="hidden">
+  <video id="vid" playsinline muted autoplay></video>
+  <div class="ov">
+    <div>
+      <div class="row" style="justify-content:space-between">
+        <span class="pill" id="runMode"></span><span class="pill" id="runSubj"></span>
+      </div>
+      <div style="margin-top:22px" class="clock" id="runClock">00:00:00</div>
+      <div class="state" id="runState">공부 중</div>
+      <div class="sub" style="text-align:center;margin-top:4px" id="runToday"></div>
+      <div id="runWarn"></div>
+    </div>
+    <div>
+      <div class="runbtns">
+        <button id="bPause">일시정지</button>
+        <button class="stop" id="bStop">공부 끝</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+/* ===== 설정 ===== */
+const API='https://script.google.com/macros/s/AKfycbyzt_AuvfzMXuLG0IzsM_GzG-Kx7oqzvLBCkQ7eWxhmu_kDD6ETHH4fs39pB_b2kc_5PQ/exec';
+const KEY='fermat.study.v1';
+const SUBJ=['수학','영어','국어','과학','사회','기타'];
+const CHECK_MIN=25;          /* 버튼 모드: 몇 분마다 "공부 중인가요?" 확인 */
+const CHECK_WAIT=120;        /* 확인 버튼을 누를 때까지 기다리는 시간(초) */
+const DARK_SEC=15;           /* 카메라가 이만큼 계속 가려지면 자동 일시정지 */
+const MIN_SAVE=60;           /* 1분 미만 기록은 저장하지 않음 */
+
+/* ===== 저장 ===== */
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+let S=load();S.sessions=S.sessions||[];S.unsent=S.unsent||[];S.subj=S.subj||'수학';
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const hms=s=>{s=Math.max(0,Math.floor(s));return pad(Math.floor(s/3600))+':'+pad(Math.floor(s%3600/60))+':'+pad(s%60)};
+const hm=s=>{s=Math.round(s/60);const h=Math.floor(s/60),m=s%60;return h?`${h}시간 ${m}분`:`${m}분`};
+const dkey=t=>{const d=new Date(t);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+const today=()=>dkey(Date.now());
+const gradeOf=cls=>{const m=String(cls).match(/^(\d)/);return m?m[1]:''};
+const gradeName=g=>({7:'중1',8:'중2',9:'중3'}[g]||(g?g+'학년':''));
+function sumBy(filter){let cam=0,btn=0;S.sessions.forEach(x=>{if(filter(x)){if(x.mode==='cam')cam+=x.sec;else btn+=x.sec}});return {cam,btn,all:cam+btn}}
+
+/* ===== 네트워크: 기록은 모아서 아주 작게 보냄 ===== */
+let online=navigator.onLine;
+addEventListener('online',()=>{online=true;sync();render()});addEventListener('offline',()=>{online=false;render()});
+async function sync(){
+  if(!S.me||!S.unsent.length||!navigator.onLine)return;
+  const list=S.sessions.filter(x=>S.unsent.includes(x.id)).slice(0,30);
+  /* 한 기록 = id,시작(분 단위),초,모드,과목,이탈 */
+  const d=list.map(x=>[x.id,Math.floor(x.start/60000),x.sec,x.mode==='cam'?'c':'b',SUBJ.indexOf(x.subj),x.leaves||0].join('.')).join('_');
+  try{
+    const r=await fetch(`${API}?action=study&cls=${encodeURIComponent(S.me.cls)}&name=${encodeURIComponent(S.me.name)}&d=${d}`,{cache:'no-store'});
+    const j=await r.json();
+    if(j.ok){const done=new Set(list.map(x=>x.id));S.unsent=S.unsent.filter(id=>!done.has(id));S.lastSync=Date.now();save();if(S.unsent.length)sync()}
+  }catch(e){}
+}
+async function fetchRank(){
+  if(!S.me||!navigator.onLine)return;
+  try{
+    const r=await fetch(`${API}?action=studyrank&cls=${encodeURIComponent(S.me.cls)}&name=${encodeURIComponent(S.me.name)}`,{cache:'no-store'});
+    const j=await r.json();
+    if(j.ok){S.rank={at:Date.now(),list:j.list};save();if(tab==='rank')render()}
+  }catch(e){}
+}
+
+/* ===== 화면 ===== */
+let tab='home';
+function render(){
+  const a=$('#app');
+  if(!S.me){a.innerHTML=loginView();bindLogin();return}
+  a.innerHTML=`<div class="wrap">${tab==='home'?homeView():tab==='stat'?statView():tab==='rank'?rankView():helpView()}</div>
+  <nav class="tabs">${[['home','⏱','타이머'],['stat','📊','내 기록'],['rank','🏆','순위'],['help','❔','사용법']].map(([k,i,t])=>`<button data-tab="${k}" class="${tab===k?'on':''}"><i>${i}</i>${t}</button>`).join('')}</nav>`;
+  a.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;if(tab==='rank')fetchRank();render();scrollTo(0,0)});
+  if(tab==='home')bindHome();if(tab==='rank')bindRank();if(tab==='stat')bindStat();
+}
+function netPill(){return `<span class="net ${online?'on':'off'}">${online?'온라인':'오프라인'}${S.unsent.length?` · 보낼 기록 ${S.unsent.length}개`:''}</span>`}
+function loginView(){return `<div class="wrap"><h1>페르마 순공 타이머</h1>
+  <div class="card"><div class="sub">처음 한 번만 입력하면 돼요. 블라인드 테스트에 쓰는 반·이름과 똑같이 써 주세요.</div>
+  <input id="lcls" placeholder="반 (예: 7유클리드)" value="${esc((S.pend||{}).cls||'')}"><input id="lname" placeholder="이름">
+  <button class="primary" id="lgo">시작하기</button><div class="sub" id="lmsg" style="margin-top:10px"></div></div></div>`}
+function bindLogin(){
+  $('#lgo').onclick=async()=>{
+    const cls=$('#lcls').value.trim(),name=$('#lname').value.trim();if(!cls||!name){$('#lmsg').textContent='반과 이름을 모두 써 주세요.';return}
+    $('#lmsg').textContent='확인하는 중…';
+    if(navigator.onLine){
+      try{const r=await fetch(`${API}?action=check&cls=${encodeURIComponent(cls)}&name=${encodeURIComponent(name)}`);const j=await r.json();
+        if(!j.ok){$('#lmsg').textContent='명단에 없는 이름이에요. 반과 이름을 다시 확인하거나 선생님께 말씀해 주세요.';return}
+        S.me={cls:j.cls,name:j.name}}catch(e){S.me={cls,name}}
+    }else S.me={cls,name};
+    save();render();sync();
+  };
+}
+function homeView(){
+  const t=sumBy(x=>dkey(x.start)===today());
+  return `<div class="row" style="justify-content:space-between"><h1>${esc(S.me.name)}의 순공</h1>${netPill()}</div>
+  <div class="card"><div class="sub">오늘 순공 시간</div><div class="big">${hms(t.all)}</div>
+   <div class="split"><div class="cam" style="width:${t.all?t.cam/t.all*100:0}%"></div><div class="btnc" style="width:${t.all?t.btn/t.all*100:0}%"></div></div>
+   <div class="row sub"><span><span class="dot cam"></span> 카메라 ${hm(t.cam)}</span><span style="margin-left:auto"><span class="dot btnc"></span> 버튼 ${hm(t.btn)}</span></div></div>
+  <div class="card"><div class="sub">과목</div><div class="chips">${SUBJ.map(s=>`<button class="chip ${S.subj===s?'on':''}" data-subj="${s}">${s}</button>`).join('')}</div></div>
+  <div class="row" style="align-items:stretch">
+   <button class="mode c" id="goCam"><span class="ic">📷</span><b>카메라로 기록</b><span class="sub">얼굴이 보이게 세워 두기</span></button>
+   <button class="mode b" id="goBtn"><span class="ic">👆</span><b>버튼으로 기록</b><span class="sub">카메라가 안 될 때</span></button>
+  </div>
+  <p class="tip" style="margin-top:14px">타이머가 켜져 있는 동안 다른 앱으로 나가거나 화면을 끄면 시간이 바로 멈추고, 그 시간은 기록되지 않아요.</p>`;
+}
+function bindHome(){
+  document.querySelectorAll('[data-subj]').forEach(b=>b.onclick=()=>{S.subj=b.dataset.subj;save();render()});
+  $('#goCam').onclick=()=>startRun('cam');$('#goBtn').onclick=()=>startRun('btn');
+}
+let statRange='week';
+function statView(){
+  const days=statRange==='week'?7:30,arr=[];
+  for(let i=days-1;i>=0;i--){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i);const k=dkey(d);arr.push({k,d,...sumBy(x=>dkey(x.start)===k)})}
+  const max=Math.max(3600,...arr.map(x=>x.all));const tot=arr.reduce((s,x)=>({cam:s.cam+x.cam,btn:s.btn+x.btn}),{cam:0,btn:0});
+  const W=340,H=170,bw=(W-30)/days;
+  const bars=arr.map((x,i)=>{const hc=x.cam/max*(H-30),hb=x.btn/max*(H-30),X=30+i*bw+bw*.18,w=bw*.64;
+    return `<rect x="${X}" y="${H-20-hc}" width="${w}" height="${hc}" fill="var(--cam)" rx="2"/><rect x="${X}" y="${H-20-hc-hb}" width="${w}" height="${hb}" fill="var(--btn)" rx="2"/>`+
+    ((days===7||i%5===0)?`<text x="${X+w/2}" y="${H-5}" font-size="10" fill="#93a4bf" text-anchor="middle">${days===7?'일월화수목금토'[x.d.getDay()]:x.d.getDate()}</text>`:'')}).join('');
+  const hrs=Math.ceil(max/3600),grid=[...Array(hrs+1).keys()].filter(h=>hrs<=6||h%2===0).map(h=>{const y=H-20-h*3600/max*(H-30);return `<line x1="28" x2="${W}" y1="${y}" y2="${y}" stroke="#25395a"/><text x="22" y="${y+3}" font-size="9" fill="#93a4bf" text-anchor="end">${h}h</text>`}).join('');
+  /* 이번 달 달력 */
+  const now=new Date(),first=new Date(now.getFullYear(),now.getMonth(),1),nd=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  let cal='';for(let i=0;i<first.getDay();i++)cal+='<div></div>';
+  for(let d=1;d<=nd;d++){const k=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(d),s=sumBy(x=>dkey(x.start)===k).all,a=s?Math.min(1,.25+s/(4*3600)):0;
+    cal+=`<div style="background:${a?`rgba(46,168,255,${a})`:'#0b1424'}" title="${hm(s)}">${d}</div>`}
+  const recent=[...S.sessions].sort((a,b)=>b.start-a.start).slice(0,15);
+  return `<h1>내 기록</h1>
+  <div class="card"><div class="seg"><button data-r="week" class="${statRange==='week'?'on':''}">최근 7일</button><button data-r="month" class="${statRange==='month'?'on':''}">최근 30일</button></div>
+   <div class="row"><div><div class="sub">합계</div><div style="font-size:24px;font-weight:800">${hm(tot.cam+tot.btn)}</div></div>
+   <div style="margin-left:auto;text-align:right" class="sub"><div><span class="dot cam"></span> 카메라 ${hm(tot.cam)}</div><div><span class="dot btnc"></span> 버튼 ${hm(tot.btn)}</div><div>하루 평균 ${hm((tot.cam+tot.btn)/days)}</div></div></div>
+   <svg viewBox="0 0 ${W} ${H}" width="100%" style="margin-top:8px">${grid}${bars}</svg></div>
+  <div class="card"><div class="sub">${now.getMonth()+1}월 공부 달력 (진할수록 많이 공부한 날)</div><div class="cal">${'일월화수목금토'.split('').map(c=>`<div style="aspect-ratio:auto;color:#93a4bf">${c}</div>`).join('')}${cal}</div></div>
+  <div class="card list"><div class="sub" style="margin-bottom:4px">최근 기록</div>${recent.length?recent.map(x=>{const d=new Date(x.start);return `<div class="it"><span><span class="dot ${x.mode==='cam'?'cam':'btnc'}"></span> ${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())} · ${esc(x.subj)}${x.leaves?` <span class="sub">(이탈 ${x.leaves}번)</span>`:''}</span><b>${hm(x.sec)}</b></div>`}).join(''):'<div class="sub">아직 기록이 없어요.</div>'}</div>`;
+}
+function bindStat(){document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{statRange=b.dataset.r;render()})}
+let rkScope='all',rkPer='day';
+function rankView(){
+  const R=S.rank;let body='';
+  if(!R){body=`<div class="sub">${online?'순위를 불러오는 중…':'인터넷에 연결되면 순위를 볼 수 있어요.'}</div>`}
+  else{
+    const g=gradeOf(S.me.cls);
+    let list=R.list.filter(x=>rkScope==='all'||(rkScope==='grade'?gradeOf(x.c)===g:x.c===S.me.cls))
+      .map(x=>({c:x.c,n:x.n,cam:x[rkPer][0],btn:x[rkPer][1]})).map(x=>({...x,t:x.cam+x.btn})).filter(x=>x.t>0).sort((a,b)=>b.t-a.t);
+    /* 아직 안 보낸 내 기록도 반영 */
+    const meIdx=list.findIndex(x=>x.c===S.me.cls&&x.n===S.me.name);
+    const mine=sumBy(x=>inPer(x.start,rkPer));
+    if(meIdx>=0){list[meIdx].cam=Math.max(list[meIdx].cam,mine.cam);list[meIdx].btn=Math.max(list[meIdx].btn,mine.btn);list[meIdx].t=list[meIdx].cam+list[meIdx].btn}
+    else if(mine.all)list.push({c:S.me.cls,n:S.me.name,cam:mine.cam,btn:mine.btn,t:mine.all});
+    list.sort((a,b)=>b.t-a.t);
+    const my=list.findIndex(x=>x.c===S.me.cls&&x.n===S.me.name);
+    body=(my>=0?`<div class="card" style="background:#1d3352"><div class="sub">내 순위</div><div style="font-size:26px;font-weight:800">${my+1}위 <span class="sub">/ ${list.length}명</span></div><div class="sub">${hm(list[my].t)}</div></div>`:'')+
+     (list.length?list.slice(0,50).map((x,i)=>`<div class="rk ${i<3?'medal'+(i+1):''} ${i===my?'me':''}"><span class="n">${i+1}</span><span class="nm">${esc(x.n)} <span class="sub">${esc(rkScope==='class'?'':x.c)}</span></span><span class="sub" style="font-size:11px;text-align:right"><span class="dot cam"></span>${hm(x.cam)}<br><span class="dot btnc"></span>${hm(x.btn)}</span><span class="t">${hm(x.t)}</span></div>`).join(''):'<div class="sub">아직 기록이 없어요.</div>')+
+     `<div class="sub" style="margin-top:10px">${new Date(R.at).toLocaleString('ko-KR')} 기준${online?'':' · 오프라인이라 마지막으로 받은 순위예요'}</div>`;
+  }
+  return `<div class="row" style="justify-content:space-between"><h1>순위</h1>${netPill()}</div>
+  <div class="seg">${[['all','전체'],['grade',gradeName(gradeOf(S.me.cls))||'학년'],['class',S.me.cls]].map(([k,t])=>`<button data-sc="${k}" class="${rkScope===k?'on':''}">${esc(t)}</button>`).join('')}</div>
+  <div class="seg">${[['day','오늘'],['week','이번 주'],['month','이번 달']].map(([k,t])=>`<button data-pe="${k}" class="${rkPer===k?'on':''}">${t}</button>`).join('')}</div>
+  <div class="card">${body}</div>`;
+}
+function inPer(t,p){const d=new Date(t),n=new Date();if(p==='day')return dkey(t)===today();if(p==='month')return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth();
+  const m=new Date(n);m.setHours(0,0,0,0);m.setDate(m.getDate()-((m.getDay()+6)%7));return t>=m.getTime()}
+function bindRank(){document.querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{rkScope=b.dataset.sc;render()});document.querySelectorAll('[data-pe]').forEach(b=>b.onclick=()=>{rkPer=b.dataset.pe;render()})}
+function helpView(){
+  const ios=/iPhone|iPad|iPod/.test(navigator.userAgent);
+  return `<h1>사용법</h1>
+  <div class="card tip"><b>📷 카메라로 기록</b><br>휴대폰을 세워서 얼굴이 화면에 보이게 두세요. 카메라를 손으로 가리거나 엎어 두면 ${DARK_SEC}초 뒤 자동으로 멈춰요.</div>
+  <div class="card tip"><b>👆 버튼으로 기록</b><br>카메라를 쓸 수 없을 때 써요. ${CHECK_MIN}분마다 "공부 중인가요?" 버튼이 뜨고, ${CHECK_WAIT/60}분 안에 누르지 않으면 그동안의 시간은 빠져요.</div>
+  <div class="card tip"><b>⛔ 다른 앱을 못 쓰게 하려면</b><br>웹 페이지는 다른 앱을 막을 수 없어서, 다른 앱으로 나가면 타이머가 멈추고 그 시간은 빼요. 휴대폰 기능으로 이 화면에 고정해 두면 다른 앱을 열 수 없어요.<br><br>
+  ${ios?`<b>아이폰</b>: 설정 → 손쉬운 사용 → 사용법 유도된 접근 켜기 → 타이머 화면에서 측면(홈) 버튼 세 번 누르기 → 시작`:`<b>안드로이드</b>: 설정 → 보안(또는 생체 인식 및 보안) → 앱 고정(화면 고정) 켜기 → 최근 앱 화면에서 이 앱 아이콘 → '이 앱 고정'`}</div>
+  <div class="card tip"><b>📶 데이터 아끼기</b><br>기록은 휴대폰에 먼저 저장되고, 인터넷이 될 때 아주 작게 묶어서 보내요. 인터넷이 없어도 타이머와 내 기록은 그대로 쓸 수 있어요.</div>
+  <div class="card tip"><b>홈 화면에 추가</b><br>${ios?'Safari 아래 공유 버튼 → 홈 화면에 추가':'크롬 ⋮ 메뉴 → 홈 화면에 추가(앱 설치)'}하면 앱처럼 쓸 수 있어요.</div>
+  <div class="card"><div class="sub">${esc(S.me.cls)} ${esc(S.me.name)}</div><button class="ghost" id="logout" style="margin-top:8px">다른 이름으로 바꾸기</button></div>`;
+}
+document.addEventListener('click',e=>{if(e.target.id==='logout'){if(S.unsent.length&&!confirm('아직 안 보낸 기록이 있어요. 그래도 바꿀까요?'))return;S={sessions:[],unsent:[],subj:'수학'};save();render()}});
+
+/* ===== 타이머 ===== */
+let R=null; /* 진행 중 상태 */
+async function startRun(mode){
+  R={mode,subj:S.subj,start:Date.now(),acc:0,lastTick:null,running:false,leaves:0,dark:0,checkAt:0,checkShown:false,stream:null};
+  const run=$('#run');run.classList.remove('hidden','btnmode','paused');
+  $('#runMode').innerHTML=mode==='cam'?'<span class="dot cam"></span> 카메라로 기록':'<span class="dot btnc"></span> 버튼으로 기록';
+  $('#runSubj').textContent=R.subj;$('#runWarn').innerHTML='';
+  try{await document.documentElement.requestFullscreen?.()}catch(e){}
+  await keepAwake();
+  if(mode==='cam'){
+    try{R.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:480},height:{ideal:640}},audio:false});
+      const v=$('#vid');v.srcObject=R.stream;await v.play().catch(()=>{});
+      R.stream.getVideoTracks()[0].onended=()=>{pause('카메라가 꺼졌어요')};
+    }catch(e){
+      run.classList.add('hidden');R=null;releaseAwake();
+      alert('카메라를 켤 수 없어요. 카메라 권한을 허용하거나, "버튼으로 기록"을 써 주세요.');return;
+    }
+  }else run.classList.add('btnmode');
+  resume();
+  R.timer=setInterval(tick,1000);
+}
+function resume(){if(!R)return;R.running=true;R.lastTick=Date.now();R.checkAt=Date.now()+CHECK_MIN*60000;$('#run').classList.remove('paused');$('#bPause').textContent='일시정지';$('#runState').textContent='공부 중';$('#runWarn').innerHTML=''}
+function pause(why){if(!R||!R.running)return;tick();R.running=false;$('#run').classList.add('paused');$('#bPause').textContent='다시 시작';$('#runState').textContent='멈춤';if(why)$('#runWarn').innerHTML=`<div class="warn">${esc(why)}</div>`}
+function tick(){
+  if(!R)return;const now=Date.now();
+  if(R.running){
+    const dt=(now-R.lastTick)/1000;
+    /* 화면이 꺼지거나 다른 앱에 있다가 돌아온 경우 등, 2초 넘게 비면 그 시간은 빼요 */
+    if(dt<=2.5)R.acc+=dt;
+    R.lastTick=now;
+    if(R.mode==='cam')checkDark();
+    if(R.mode==='btn'&&!R.checkShown&&now>=R.checkAt)showCheck();
+  }
+  $('#runClock').textContent=hms(R.acc);
+  const t=sumBy(x=>dkey(x.start)===today()).all+R.acc;$('#runToday').textContent='오늘 합계 '+hms(t);
+}
+/* 카메라를 가리면(아주 어두우면) 멈춤 */
+const cvs=document.createElement('canvas');cvs.width=32;cvs.height=24;const cx=cvs.getContext('2d',{willReadFrequently:true});
+function checkDark(){
+  const v=$('#vid');if(!v.videoWidth)return;
+  cx.drawImage(v,0,0,32,24);const d=cx.getImageData(0,0,32,24).data;let s=0;for(let i=0;i<d.length;i+=4)s+=d[i]+d[i+1]+d[i+2];
+  const avg=s/(d.length/4)/3;
+  if(avg<18){R.dark++;if(R.dark>=DARK_SEC){R.acc=Math.max(0,R.acc-R.dark);R.dark=0;pause('카메라가 가려져서 멈췄어요. 얼굴이 보이게 놓고 다시 시작을 눌러요.')}}else R.dark=0;
+}
+/* 버튼 모드 확인 */
+let checkTimer=null;
+function showCheck(){
+  R.checkShown=true;const accAtCheck=R.acc;const m=document.createElement('div');m.className='modal';m.id='checkModal';
+  let left=CHECK_WAIT;m.innerHTML=`<div class="box"><div style="font-size:40px">✋</div><h2 style="margin:6px 0">지금 공부 중인가요?</h2><div class="sub" id="cLeft"></div><button class="primary" style="margin-top:14px" id="cYes">네, 공부 중이에요</button></div>`;
+  document.body.appendChild(m);try{navigator.vibrate?.([200,100,200])}catch(e){}
+  const upd=()=>{$('#cLeft').textContent=`${left}초 안에 눌러 주세요`};upd();
+  checkTimer=setInterval(()=>{left--;upd();if(left<=0){clearInterval(checkTimer);m.remove();if(R){R.acc=accAtCheck;R.checkShown=false;pause('확인 버튼을 누르지 않아서 멈췄어요. 확인 뒤 시간은 빠졌어요.')}}},1000);
+  $('#cYes').onclick=()=>{clearInterval(checkTimer);m.remove();if(R){R.checkShown=false;R.checkAt=Date.now()+CHECK_MIN*60000}};
+}
+$('#bPause').onclick=()=>{if(!R)return;R.running?pause():resume()};
+$('#bStop').onclick=()=>finishRun();
+function finishRun(){
+  if(!R)return;tick();clearInterval(R.timer);clearInterval(checkTimer);$('#checkModal')?.remove();
+  const sec=Math.floor(R.acc);
+  if(sec>=MIN_SAVE){const s={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),start:R.start,sec,mode:R.mode,subj:R.subj,leaves:R.leaves};S.sessions.push(s);S.unsent.push(s.id)}
+  save();
+  if(R.stream)R.stream.getTracks().forEach(t=>t.stop());$('#vid').srcObject=null;
+  releaseAwake();try{document.fullscreenElement&&document.exitFullscreen()}catch(e){}
+  $('#run').classList.add('hidden');const msg=sec>=MIN_SAVE?`${hm(sec)} 기록했어요!`:'1분 미만은 기록하지 않아요.';R=null;tab='home';render();toast(msg);sync();
+}
+function toast(t){const d=document.createElement('div');d.className='modal';d.innerHTML=`<div class="box"><div style="font-size:36px">✅</div><h2 style="margin:8px 0">${esc(t)}</h2><button class="primary">확인</button></div>`;d.querySelector('button').onclick=()=>d.remove();document.body.appendChild(d)}
+/* 다른 앱으로 나가면 바로 멈춤 */
+document.addEventListener('visibilitychange',()=>{
+  if(!R)return;
+  if(document.hidden){if(R.running){tick();R.leaves++;pause(`다른 화면으로 나가서 멈췄어요 (${R.leaves}번째). 나가 있던 시간은 기록되지 않아요.`)}}
+  else keepAwake();
+});
+addEventListener('pagehide',()=>{if(R&&R.acc>=MIN_SAVE){const s={id:Date.now().toString(36)+'x',start:R.start,sec:Math.floor(R.acc),mode:R.mode,subj:R.subj,leaves:R.leaves};S.sessions.push(s);S.unsent.push(s.id);save();R=null}});
+/* 화면 꺼짐 방지 */
+let wake=null,noSleepVid=null;
+async function keepAwake(){
+  try{if('wakeLock' in navigator){wake=await navigator.wakeLock.request('screen');return}}catch(e){}
+  /* Wake Lock이 없는 옛 휴대폰: 보이지 않는 영상을 반복 재생해서 화면이 안 꺼지게 */
+  if(!noSleepVid){noSleepVid=document.createElement('video');noSleepVid.setAttribute('playsinline','');noSleepVid.muted=true;noSleepVid.loop=true;noSleepVid.style.cssText='position:fixed;width:1px;height:1px;opacity:0;pointer-events:none';
+    noSleepVid.src='data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAAG21kYXQAAAGzABAHAAABthADAowdbb9/AAAC6W1vb3YAAABsbXZoZAAAAAB8JbCAfCWwgAAAA+gAAAAAAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAIVdHJhawAAAFx0a2hkAAAAD3wlsIB8JbCAAAAAAQAAAAAAAAPoAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAgAAAAIAAAAAAAJGVkdHMAAAAcZWxzdAAAAAAAAAABAAAD6AAAAAAAAQAAAAABjW1kaWEAAAAgbWRoZAAAAAB8JbCAfCWwgAAAA+gAAAAAVcQAAAAAAC1oZGxyAAAAAAAAAAB2aWRlAAAAAAAAAAAAAAAAVmlkZW9IYW5kbGVyAAAAAThtaW5mAAAAFHZtaGQAAAABAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAD4c3RibAAAAJhzdHNkAAAAAAAAAAEAAACIbXA0dgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAgACAASAAAAEgAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABj//wAAADJlc2RzAAAAAAOAgIAhAAEABICAgBMgEQAAAAAAAAAAAAAABYCAgAEUBoCAgAECAAAAGHN0dHMAAAAAAAAAAQAAAAEAAAPoAAAAFHN0c3oAAAAAAAAAEwAAAAEAAAAUc3RzYwAAAAAAAAABAAAAAQAAAAEAAAABAAAAFHN0Y28AAAAAAAAAAQAAACwAAABgdWR0YQAAAFhtZXRhAAAAAAAAACFoZGxyAAAAAAAAAABtZGlyYXBwbAAAAAAAAAAAAAAAACtpbHN0AAAAI6l0b28AAAAbZGF0YQAAAAEAAAAATGF2ZjU2LjQwLjEwMQ==';document.body.appendChild(noSleepVid)}
+  noSleepVid.play().catch(()=>{});
+}
+function releaseAwake(){try{wake&&wake.release()}catch(e){}wake=null;noSleepVid&&noSleepVid.pause()}
+
+/* ===== 시작 ===== */
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+render();sync();setInterval(sync,5*60000);
+</script>
+</body>
+</html>
