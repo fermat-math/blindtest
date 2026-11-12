@@ -389,7 +389,7 @@ function render(){
   if(view.mode==='teacher') return renderTeacher();
   if(!view.exam&&!autoOpened&&STATE.studentOnly&&!STATE.hub&&STATE.exams.length===1&&prog._me){autoOpened=true;view.exam=STATE.exams[0].id}
   if(view.exam) return renderExam(STATE.exams.find(x=>x.id===view.exam));
-  if(STATE.hub){const tb=h(`<nav class="maintabs" role="tablist"><button role="tab" data-t="blind" aria-selected="${TAB==='blind'}">블라인드 테스트</button><button role="tab" data-t="notes" aria-selected="${TAB==='notes'}">오답노트</button><button role="tab" data-t="study" aria-selected="${TAB==='study'}">순공 타이머</button></nav>`);
+  if(STATE.hub){const tb=h(`<nav class="maintabs" role="tablist"><button role="tab" data-t="study" aria-selected="${TAB==='study'}">순공 타이머</button><button role="tab" data-t="blind" aria-selected="${TAB==='blind'}">블라인드 테스트</button><button role="tab" data-t="notes" aria-selected="${TAB==='notes'}">오답노트</button></nav>`);
     tb.onclick=e=>{const t=e.target.closest('button');if(t&&t.dataset.t!==TAB)setTab(t.dataset.t)};app.appendChild(tb);
     if(TAB==='notes'){if(PICK&&!(noteView&&noteView.note))renderWho();return renderNotes()}
     if(TAB==='study'){renderWho();
@@ -401,9 +401,9 @@ function render(){
 }
 
 /* ---------- 오답노트 (시험 대비 첫 화면의 두 번째 탭) ---------- */
-let TAB=(()=>{const h=location.hash.replace('#','');if(h==='notes'||h==='blind'||h==='study')return h;try{return localStorage.getItem('dabogi.tab')||'blind'}catch(e){return 'blind'}})();
+let TAB=(()=>{const h=location.hash.replace('#','');if(h==='notes'||h==='blind'||h==='study')return h;try{return sessionStorage.getItem('dabogi.tab')||'study'}catch(e){return 'study'}})();
 let BOOKS=null,booksErr=false,noteView=null;
-function setTab(t){TAB=t;try{localStorage.setItem('dabogi.tab',t)}catch(e){}noteView=null;render();scrollTo(0,0)}
+function setTab(t){TAB=t;try{sessionStorage.setItem('dabogi.tab',t)}catch(e){}noteView=null;render();scrollTo(0,0)}
 async function loadBooks(){if(BOOKS||booksErr)return;try{BOOKS=(await(await fetch('notes/books.json?v='+(STATE.v||''))).json()).books}catch(e){booksErr=true}render()}
 const wrongSet=bid=>{prog._wrong=prog._wrong||{};return new Set(prog._wrong[bid]||[])};
 const saveWrong=(bid,set)=>{prog._wrong=prog._wrong||{};prog._wrong[bid]=[...set];saveProg()};
