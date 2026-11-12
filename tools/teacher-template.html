@@ -547,11 +547,11 @@ function studentRecord(c,n){
   return {rows,sessions,exams:Object.values(exams).sort((a,b)=>a.first-b.first),tally,days,total,last:rows.length?rows[rows.length-1].at:null};
 }
 
-let MTAB=ls.get('dabogi.t.mtab','blind');
+let MTAB=(()=>{try{return sessionStorage.getItem('dabogi.t.mtab')||'study'}catch(e){return 'study'}})();
 function renderMain(){
   app.innerHTML=header();
-  const mt=h(`<nav class="maintabs" role="tablist">${[['blind','블라인드 테스트'],['notes','오답노트'],['study','순공시간']].map(([k,t])=>`<button role="tab" data-mt="${k}" aria-selected="${MTAB===k}">${t}</button>`).join('')}</nav>`);
-  mt.onclick=e=>{const b=e.target.closest('[data-mt]');if(b&&b.dataset.mt!==MTAB){MTAB=b.dataset.mt;ls.set('dabogi.t.mtab',MTAB);renderMain()}};
+  const mt=h(`<nav class="maintabs" role="tablist">${[['study','순공시간'],['blind','블라인드 테스트'],['notes','오답노트']].map(([k,t])=>`<button role="tab" data-mt="${k}" aria-selected="${MTAB===k}">${t}</button>`).join('')}</nav>`);
+  mt.onclick=e=>{const b=e.target.closest('[data-mt]');if(b&&b.dataset.mt!==MTAB){MTAB=b.dataset.mt;try{sessionStorage.setItem('dabogi.t.mtab',MTAB)}catch(e){};renderMain()}};
   app.appendChild(mt);
   const classes=[...new Set(DATA.roster.map(r=>r.cls))];
   if(!classes.includes(clsF))clsF=classes[0]||'';
