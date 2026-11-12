@@ -166,9 +166,10 @@ function render(){
 }
 function netPill(){return `<span class="net ${online?'on':'off'}">${online?'온라인':'오프라인'}${S.unsent.length?` · 보낼 기록 ${S.unsent.length}개`:''}</span>`}
 let ROSTER=null,pickCls='';
-async function loadRoster(){try{const r=await fetch('roster.json',{cache:'no-cache'});ROSTER=await r.json();try{localStorage.setItem(KEY+'.roster',JSON.stringify(ROSTER))}catch(e){}}catch(e){try{ROSTER=JSON.parse(localStorage.getItem(KEY+'.roster'))}catch(e2){}}if(!S.me)render()}
+async function loadRoster(){try{const r=await fetch('roster.json',{cache:'no-cache'});ROSTER=await r.json();try{localStorage.setItem(KEY+'.roster',JSON.stringify(ROSTER))}catch(e){}}catch(e){try{ROSTER=JSON.parse(localStorage.getItem(KEY+'.roster'))}catch(e2){}}if(!ROSTER)rosterFail=true;if(!S.me)render()}
+let rosterFail=false;
 function loginView(){
-  if(!ROSTER)return `<div class="wrap"><h1>페르마 순공 타이머</h1><div class="card sub">명단을 불러오는 중…</div></div>`;
+  if(!ROSTER)return `<div class="wrap"><h1>페르마 순공 타이머</h1><div class="card sub">${rosterFail?'처음 한 번은 인터넷이 필요해요. 인터넷에 연결한 뒤 다시 열어 주세요.':'명단을 불러오는 중…'}</div></div>`;
   const classes=[...new Set(ROSTER.map(r=>r.cls))];
   const names=pickCls?ROSTER.filter(r=>r.cls===pickCls):[];
   return `<div class="wrap"><h1>페르마 순공 타이머</h1>
@@ -282,6 +283,7 @@ document.addEventListener('click',e=>{if(e.target.id==='logout'){
 /* ===== 타이머 ===== */
 let R=null; /* 진행 중 상태 */
 async function startRun(mode){
+  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume()}catch(e){}
   R={mode,subj:S.subj,start:Date.now(),acc:0,lastTick:null,running:false,leaves:0,aways:0,dark:0,noFace:0,faceHits:0,awayPause:false,checkAt:0,checkShown:false,stream:null};
   const run=$('#run');run.classList.remove('hidden','btnmode','paused','dim');
   $('#runMode').innerHTML=mode==='cam'?'<span class="dot cam"></span> 카메라로 기록':'<span class="dot btnc"></span> 버튼으로 기록';
@@ -302,22 +304,26 @@ async function startRun(mode){
   resume();
   R.timer=setInterval(tick,1000);
 }
-function resume(){if(!R)return;R.touch=Date.now();R.awayPause=false;R.noFace=0;R.running=true;R.lastTick=Date.now();R.checkAt=Date.now()+CHECK_MIN*60000;$('#run').classList.remove('paused');$('#bPause').textContent='일시정지';$('#runState').textContent='공부 중';$('#runWarn').innerHTML=''}
-function pause(why){if(!R||!R.running)return;tick();R.running=false;$('#run').classList.add('paused');$('#bPause').textContent='다시 시작';$('#runState').textContent='멈춤';if(why)$('#runWarn').innerHTML=`<div class="warn">${esc(why)}</div>`}
-function tick(){
+function resume(){if(!R)return;R.pausedAt=0;R.touch=Date.now();R.awayPause=false;R.noFace=0;R.running=true;R.lastTick=Date.now();R.checkAt=Date.now()+CHECK_MIN*60000;$('#run').classList.remove('paused');$('#bPause').textContent='일시정지';$('#runState').textContent='공부 중';$('#runWarn').innerHTML=''}
+function pause(why){if(!R||!R.running)return;tick(true);R.running=false;R.pausedAt=Date.now();R.touch=Date.now();$('#run').classList.add('paused');$('#bPause').textContent='다시 시작';$('#runState').textContent='멈춤';if(why)$('#runWarn').innerHTML=`<div class="warn">${esc(why)}</div>`}
+function tick(quiet){
   if(!R)return;const now=Date.now();
   if(R.running){
     const dt=(now-R.lastTick)/1000;
-    /* 화면이 꺼지거나 다른 앱에 있다가 돌아온 경우 등, 2초 넘게 비면 그 시간은 빼요 */
-    if(dt<=2.5)R.acc+=dt;
+    /* 화면이 꺼지는 등 5초 넘게 비면 그 시간은 빼요 (다른 앱으로 나가면 visibilitychange에서 따로 멈춤) */
+    if(dt<=5)R.acc+=dt;
     R.lastTick=now;
-    if(R.mode==='cam'&&!faceOK)checkDark();
-    if(R.mode==='btn'&&!R.checkShown&&now>=R.checkAt)showCheck();
+    if(!quiet&&R.mode==='cam'&&!faceOK)checkDark();
+    if(!quiet&&R.mode==='btn'&&!R.checkShown&&now>=R.checkAt)showCheck();
   }
   R.tk=(R.tk||0)+1;
+  if(quiet)return;
   if(R.mode==='cam'&&faceOK&&R.tk%FACE_EVERY===0)checkFace();
   const run=$('#run');
-  if(R.running&&!R.checkShown&&now-(R.touch||R.start)>DIM_AFTER*1000)run.classList.add('dim');else if(!R.running)run.classList.remove('dim');
+  const idle=now-(R.touch||R.start);
+  if(!R.checkShown&&idle>(R.running?DIM_AFTER:120)*1000)run.classList.add('dim');
+  /* 멈춘 채로 30분이 지나면 자동으로 공부를 끝내요 (카메라·화면이 계속 켜져 배터리가 닳지 않게) */
+  if(!R.running&&R.pausedAt&&now-R.pausedAt>30*60000){finishRun('멈춘 채로 30분이 지나서 자동으로 끝냈어요.');return}
   $('#runClock').textContent=hms(R.acc);
   const t=sumBy(x=>dkey(x.start)===today()).all+R.acc;$('#runToday').textContent='오늘 합계 '+hms(t);
 }
@@ -350,39 +356,45 @@ async function checkFace(){
     if(R.running){R.noFace+=FACE_EVERY;if(R.noFace>=AWAY_SEC){R.acc=Math.max(0,R.acc-R.noFace);R.noFace=0;R.aways++;pause(`자리를 비워서 멈췄어요 (${R.aways}번째). 얼굴이 다시 보이면 자동으로 다시 시작해요.`);R.awayPause=true}}}
 }
 /* 버튼 모드 확인 */
-let checkTimer=null;
+let checkTimer=null,actx=null;
+function beep(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume();[0,.35].forEach(d=>{const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=880;g.gain.setValueAtTime(.25,actx.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d+.25);o.connect(g).connect(actx.destination);o.start(actx.currentTime+d);o.stop(actx.currentTime+d+.3)})}catch(e){}}
 function showCheck(){
   R.checkShown=true;$('#run').classList.remove('dim');const accAtCheck=R.acc;const m=document.createElement('div');m.className='modal';m.id='checkModal';
   let left=CHECK_WAIT;m.innerHTML=`<div class="box"><div style="font-size:40px">✋</div><h2 style="margin:6px 0">지금 공부 중인가요?</h2><div class="sub" id="cLeft"></div><button class="primary" style="margin-top:14px" id="cYes">네, 공부 중이에요</button></div>`;
-  document.body.appendChild(m);try{navigator.vibrate?.([200,100,200])}catch(e){}
+  document.body.appendChild(m);try{navigator.vibrate?.([200,100,200])}catch(e){}beep();
   const upd=()=>{$('#cLeft').textContent=`${left}초 안에 눌러 주세요`};upd();
-  checkTimer=setInterval(()=>{left--;upd();if(left<=0){clearInterval(checkTimer);m.remove();if(R){R.acc=accAtCheck;R.checkShown=false;pause('확인 버튼을 누르지 않아서 멈췄어요. 확인 뒤 시간은 빠졌어요.')}}},1000);
+  checkTimer=setInterval(()=>{left--;upd();if(left<=0){clearInterval(checkTimer);m.remove();if(R){pause('확인 버튼을 누르지 않아서 멈췄어요. 확인 창이 뜬 뒤의 시간은 빠졌어요.');R.acc=accAtCheck;R.checkShown=false;$('#runClock').textContent=hms(R.acc)}}},1000);
   $('#cYes').onclick=()=>{clearInterval(checkTimer);m.remove();if(R){R.checkShown=false;R.checkAt=Date.now()+CHECK_MIN*60000}};
 }
 ['pointerdown','touchstart'].forEach(ev=>$('#run').addEventListener(ev,()=>{if(R){R.touch=Date.now();$('#run').classList.remove('dim')}},{passive:true}));
 $('#bPause').onclick=()=>{if(!R)return;R.running?pause():resume()};
 $('#bStop').onclick=()=>finishRun();
-function finishRun(){
-  if(!R)return;tick();clearInterval(R.timer);clearInterval(checkTimer);$('#checkModal')?.remove();
+function finishRun(autoMsg){
+  if(!R)return;tick(true);clearInterval(R.timer);clearInterval(checkTimer);$('#checkModal')?.remove();
   const sec=Math.floor(R.acc);
   if(sec>=MIN_SAVE){const s={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),start:R.start,sec,mode:R.mode,subj:R.subj,leaves:R.leaves+R.aways};S.sessions.push(s);S.unsent.push(s.id)}
   save();
   if(R.stream)R.stream.getTracks().forEach(t=>t.stop());$('#vid').srcObject=null;
   releaseAwake();try{document.fullscreenElement&&document.exitFullscreen()}catch(e){}
-  $('#run').classList.add('hidden');const msg=sec>=MIN_SAVE?`${hm(sec)} 기록했어요!`:'1분 미만은 기록하지 않아요.';R=null;tab='home';render();toast(msg);sync();
+  $('#run').classList.add('hidden');const msg=(typeof autoMsg==='string'?autoMsg+' ':'')+(sec>=MIN_SAVE?`${hm(sec)} 기록했어요!`:'1분 미만은 기록하지 않아요.');R=null;tab='home';render();toast(msg);sync();
 }
 function toast(t){const d=document.createElement('div');d.className='modal';d.innerHTML=`<div class="box"><div style="font-size:36px">✅</div><h2 style="margin:8px 0">${esc(t)}</h2><button class="primary">확인</button></div>`;d.querySelector('button').onclick=()=>d.remove();document.body.appendChild(d)}
 /* 다른 앱으로 나가면 바로 멈춤 */
 document.addEventListener('visibilitychange',()=>{
   if(!R)return;
-  if(document.hidden){if(R.running){tick();R.leaves++;pause(`다른 화면으로 나가서 멈췄어요 (${R.leaves}번째). 나가 있던 시간은 기록되지 않아요.`)}}
+  if(document.hidden){if(R.running){tick(true);R.leaves++;pause(`다른 화면으로 나가서 멈췄어요 (${R.leaves}번째). 나가 있던 시간은 기록되지 않아요.`)}}
   else keepAwake();
 });
-addEventListener('pagehide',()=>{if(R&&R.acc>=MIN_SAVE){const s={id:Date.now().toString(36)+'x',start:R.start,sec:Math.floor(R.acc),mode:R.mode,subj:R.subj,leaves:R.leaves};S.sessions.push(s);S.unsent.push(s.id);save();R=null}});
+addEventListener('pagehide',()=>{if(!R)return;
+  if(R.running)tick(true);
+  if(R.acc>=MIN_SAVE){const s={id:Date.now().toString(36)+'x',start:R.start,sec:Math.floor(R.acc),mode:R.mode,subj:R.subj,leaves:R.leaves+R.aways};S.sessions.push(s);S.unsent.push(s.id);save()}
+  clearInterval(R.timer);clearInterval(checkTimer);$('#checkModal')?.remove();if(R.stream)R.stream.getTracks().forEach(t=>t.stop());$('#vid').srcObject=null;releaseAwake();
+  $('#run').classList.add('hidden');R=null;render()});
 /* 화면 꺼짐 방지 */
 let wake=null,noSleepVid=null;
 async function keepAwake(){
-  try{if('wakeLock' in navigator){wake=await navigator.wakeLock.request('screen');return}}catch(e){}
+  const ios=/iPhone|iPad|iPod/.test(navigator.userAgent);
+  try{if('wakeLock' in navigator){wake=await navigator.wakeLock.request('screen');wake.addEventListener('release',()=>{if(R&&!document.hidden)setTimeout(keepAwake,500)});if(!ios)return}}catch(e){}
   /* Wake Lock이 없는 옛 휴대폰: 보이지 않는 영상을 반복 재생해서 화면이 안 꺼지게 */
   if(!noSleepVid){noSleepVid=document.createElement('video');noSleepVid.setAttribute('playsinline','');noSleepVid.muted=true;noSleepVid.loop=true;noSleepVid.style.cssText='position:fixed;width:1px;height:1px;opacity:0;pointer-events:none';
     noSleepVid.src='data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAAG21kYXQAAAGzABAHAAABthADAowdbb9/AAAC6W1vb3YAAABsbXZoZAAAAAB8JbCAfCWwgAAAA+gAAAAAAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAIVdHJhawAAAFx0a2hkAAAAD3wlsIB8JbCAAAAAAQAAAAAAAAPoAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAgAAAAIAAAAAAAJGVkdHMAAAAcZWxzdAAAAAAAAAABAAAD6AAAAAAAAQAAAAABjW1kaWEAAAAgbWRoZAAAAAB8JbCAfCWwgAAAA+gAAAAAVcQAAAAAAC1oZGxyAAAAAAAAAAB2aWRlAAAAAAAAAAAAAAAAVmlkZW9IYW5kbGVyAAAAAThtaW5mAAAAFHZtaGQAAAABAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAD4c3RibAAAAJhzdHNkAAAAAAAAAAEAAACIbXA0dgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAgACAASAAAAEgAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABj//wAAADJlc2RzAAAAAAOAgIAhAAEABICAgBMgEQAAAAAAAAAAAAAABYCAgAEUBoCAgAECAAAAGHN0dHMAAAAAAAAAAQAAAAEAAAPoAAAAFHN0c3oAAAAAAAAAEwAAAAEAAAAUc3RzYwAAAAAAAAABAAAAAQAAAAEAAAABAAAAFHN0Y28AAAAAAAAAAQAAACwAAABgdWR0YQAAAFhtZXRhAAAAAAAAACFoZGxyAAAAAAAAAABtZGlyYXBwbAAAAAAAAAAAAAAAACtpbHN0AAAAI6l0b28AAAAbZGF0YQAAAAEAAAAATGF2ZjU2LjQwLjEwMQ==';document.body.appendChild(noSleepVid)}
