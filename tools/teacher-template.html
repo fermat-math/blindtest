@@ -142,6 +142,7 @@ th,td{text-align:left;padding:7px 8px;border-top:1px solid var(--line);vertical-
 .maintabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:5px;border-radius:14px;background:var(--sheet,#fff);border:1px solid var(--line,#ddd);margin:0 0 12px;position:sticky;top:0;z-index:9}
 .maintabs button{font:inherit;font-weight:700;font-size:16px;padding:12px 8px;border:0;border-radius:10px;background:none;color:var(--muted,#777);cursor:pointer}
 .maintabs button[aria-selected="true"]{background:var(--band,#1f6feb);color:var(--band-ink,#fff)}
+.avg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.avc{border:1px solid var(--line,#e3e3e3);border-radius:12px;padding:10px 12px}.avc.on{border-color:var(--band,#13283b);box-shadow:inset 0 0 0 1px var(--band,#13283b)}.avc b{display:block;font-size:20px;margin:2px 0}.avc small{display:block;color:var(--muted,#777);font-size:12px}
 .ngroup{border-top:1px solid var(--line,#e5e5e5);padding:10px 0}.nhead{display:flex;gap:10px;align-items:baseline;margin-bottom:6px}
 .srow{display:grid;grid-template-columns:28px 80px 1fr 150px;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line,#eee)}.srow.none{opacity:.5}
 .sn{text-align:center;font-weight:800}.sbar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:#eef2f7}.sbar .c{background:#2ea8ff}.sbar .b{background:#ffb020}
@@ -614,10 +615,19 @@ function hmS(s){s=Math.round((s||0)/60);const h=Math.floor(s/60),m=s%60;return h
 async function renderStudyTab(classes){
   const p=h(`<section class="panel"><div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:8px"><div class="label">${esc(clsF)} 순공시간</div><div class="wtabs" role="tablist">${[['day','오늘'],['week','이번 주'],['month','이번 달']].map(([k,t])=>`<button role="tab" data-per="${k}" aria-selected="${stPer===k}">${t}</button>`).join('')}</div></div><div class="sbody"><p class="hint">불러오는 중…</p></div></section>`);
   const draw=()=>{const by={};(STUDY.list||[]).forEach(x=>by[x.c+'|'+x.n]=x);
+    const nowD=new Date(),days=stPer==='day'?1:stPer==='week'?((nowD.getDay()+6)%7)+1:nowD.getDate();
+    const val=r=>{const x=by[r.cls+'|'+r.name];return x?x[stPer][0]+x[stPer][1]:0};
+    const gOf=c=>{const m=String(c).match(/^(\d)/);return m?m[1]:''},gName=g=>({7:'중1',8:'중2',9:'중3'}[g]||g+'학년');
+    const avg=list=>{const t=list.map(val);const n=list.length,act=t.filter(Boolean);return {per:n?t.reduce((a,b)=>a+b,0)/n:0,act:act.length?act.reduce((a,b)=>a+b,0)/act.length:0,n,an:act.length}};
+    const card=(label,a,on)=>`<div class="avc ${on?'on':''}"><div class="hint">${esc(label)}</div><b>${hmS(a.per)}</b><small>${days>1?`하루 평균 ${hmS(a.per/days)} · `:''}공부한 학생 ${a.an}/${a.n}명</small>${a.an&&a.an<a.n?`<small>공부한 학생만 평균 ${hmS(a.act)}</small>`:''}</div>`;
+    const grades=[...new Set(DATA.roster.map(r=>gOf(r.cls)))].filter(Boolean).sort();
+    const avgHtml=`<div class="label" style="margin:4px 0 6px">1인당 평균 순공시간 (${stPer==='day'?'오늘':stPer==='week'?'이번 주 '+days+'일':'이번 달 '+days+'일'})</div>
+      <div class="avg">${card('전체',avg(DATA.roster),false)}${grades.map(g=>card(gName(g),avg(DATA.roster.filter(r=>gOf(r.cls)===g)),gOf(clsF)===g)).join('')}</div>
+      <div class="avg" style="margin-top:6px">${classes.map(c=>card(c,avg(DATA.roster.filter(r=>r.cls===c)),c===clsF)).join('')}</div>`;
     const rows=DATA.roster.filter(r=>r.cls===clsF).map(r=>{const x=by[r.cls+'|'+r.name]||{day:[0,0],week:[0,0],month:[0,0]};const v=x[stPer];return {n:r.name,cam:v[0],btn:v[1],t:v[0]+v[1]}}).sort((a,b)=>b.t-a.t);
     const mx=Math.max(1,...rows.map(r=>r.t));const tot=rows.reduce((a,r)=>({cam:a.cam+r.cam,btn:a.btn+r.btn}),{cam:0,btn:0});
-    p.querySelector('.sbody').innerHTML=`<p class="hint" style="margin:6px 0 10px">반 합계 ${hmS(tot.cam+tot.btn)} · <span class="sdot c"></span>카메라 ${hmS(tot.cam)} · <span class="sdot b"></span>버튼 ${hmS(tot.btn)} · 공부한 학생 ${rows.filter(r=>r.t).length}/${rows.length}명</p>
-     <div class="srank">${rows.map((r,i)=>`<div class="srow ${r.t?'':'none'}"><span class="sn">${r.t?i+1:'-'}</span><b class="snm">${esc(r.n)}</b><span class="sbar"><i class="c" style="width:${r.cam/mx*100}%"></i><i class="b" style="width:${r.btn/mx*100}%"></i></span><span class="st2"><b>${r.t?hmS(r.t):'기록 없음'}</b>${r.t?`<small><span class="sdot c"></span>${hmS(r.cam)} · <span class="sdot b"></span>${hmS(r.btn)}</small>`:''}</span></div>`).join('')}</div>
+    p.querySelector('.sbody').innerHTML=avgHtml+`<div class="label" style="margin:16px 0 0">${esc(clsF)} 학생별</div><p class="hint" style="margin:6px 0 10px">반 합계 ${hmS(tot.cam+tot.btn)} · <span class="sdot c"></span>카메라 ${hmS(tot.cam)} · <span class="sdot b"></span>버튼 ${hmS(tot.btn)} · 공부한 학생 ${rows.filter(r=>r.t).length}/${rows.length}명</p>
+     <div class="srank">${rows.map((r,i)=>`<div class="srow ${r.t?'':'none'}"><span class="sn">${r.t?i+1:'-'}</span><b class="snm">${esc(r.n)}</b><span class="sbar"><i class="c" style="width:${r.cam/mx*100}%"></i><i class="b" style="width:${r.btn/mx*100}%"></i></span><span class="st2"><b>${r.t?hmS(r.t):'기록 없음'}</b>${r.t?`<small><span class="sdot c"></span>${hmS(r.cam)} · <span class="sdot b"></span>${hmS(r.btn)}</small>${days>1?`<small>하루 평균 ${hmS(r.t/days)}</small>`:''}`:''}</span></div>`).join('')}</div>
      <p class="hint" style="margin-top:10px">${new Date(STUDY.at).toLocaleString('ko-KR')} 기준 · 학생이 인터넷에 연결되어야 기록이 올라와요.</p>`};
   p.querySelectorAll('[data-per]').forEach(b=>b.onclick=()=>{stPer=b.dataset.per;ls.set('dabogi.t.stper',stPer);p.querySelectorAll('[data-per]').forEach(x=>x.setAttribute('aria-selected',x===b));if(STUDY)draw()});
   app.appendChild(classBar(classes,c=>`${DATA.roster.filter(r=>r.cls===c).length}명`));app.appendChild(p);
