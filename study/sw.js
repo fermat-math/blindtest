@@ -1,4 +1,4 @@
-const C='fermat-study-v6';
+const C='fermat-study-v7';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','roster.json'])).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 /* 데이터 아끼기: 페이지 파일은 캐시 먼저(백그라운드로 갱신), Apps Script 요청은 그대로 */
