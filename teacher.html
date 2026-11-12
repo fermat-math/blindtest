@@ -139,6 +139,14 @@ th,td{text-align:left;padding:7px 8px;border-top:1px solid var(--line);vertical-
 .wq-s{font-size:13px;color:#555}.wq-c{color:#e57a00;font-size:16px}.wq-who{display:flex;flex-wrap:wrap;gap:4px}.wq-who span{background:#fff3e6;color:#9a4f00;border-radius:999px;padding:2px 8px;font-size:12px}.wq-who small{opacity:.75}
 .wq-r{font-size:13px;border-top:1px dashed #eee;padding-top:5px}.wq-r s{color:#c0392b;font-weight:700}.wq-r em{font-style:normal;font-size:11px;font-weight:700;color:#c0392b;background:#fdecea;border-radius:999px;padding:1px 7px;margin-left:6px}.wq-r p{margin:2px 0 0;color:#444}
 .lvtoday{color:#e8590c}
+.maintabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:5px;border-radius:14px;background:var(--sheet,#fff);border:1px solid var(--line,#ddd);margin:0 0 12px;position:sticky;top:0;z-index:9}
+.maintabs button{font:inherit;font-weight:700;font-size:16px;padding:12px 8px;border:0;border-radius:10px;background:none;color:var(--muted,#777);cursor:pointer}
+.maintabs button[aria-selected="true"]{background:var(--band,#1f6feb);color:var(--band-ink,#fff)}
+.ngroup{border-top:1px solid var(--line,#e5e5e5);padding:10px 0}.nhead{display:flex;gap:10px;align-items:baseline;margin-bottom:6px}
+.srow{display:grid;grid-template-columns:28px 80px 1fr 150px;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line,#eee)}.srow.none{opacity:.5}
+.sn{text-align:center;font-weight:800}.sbar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:#eef2f7}.sbar .c{background:#2ea8ff}.sbar .b{background:#ffb020}
+.st2{text-align:right}.st2 small{display:block;color:var(--muted,#777);font-size:12px}.sdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 3px 0 2px}.sdot.c{background:#2ea8ff}.sdot.b{background:#ffb020}
+@media (max-width:560px){.srow{grid-template-columns:24px 1fr 120px}.srow .sbar{grid-column:2/4;grid-row:2}}
 </style>
 </head>
 <body>
@@ -538,8 +546,12 @@ function studentRecord(c,n){
   return {rows,sessions,exams:Object.values(exams).sort((a,b)=>a.first-b.first),tally,days,total,last:rows.length?rows[rows.length-1].at:null};
 }
 
+let MTAB=ls.get('dabogi.t.mtab','blind');
 function renderMain(){
   app.innerHTML=header();
+  const mt=h(`<nav class="maintabs" role="tablist">${[['blind','블라인드 테스트'],['notes','오답노트'],['study','순공시간']].map(([k,t])=>`<button role="tab" data-mt="${k}" aria-selected="${MTAB===k}">${t}</button>`).join('')}</nav>`);
+  mt.onclick=e=>{const b=e.target.closest('[data-mt]');if(b&&b.dataset.mt!==MTAB){MTAB=b.dataset.mt;ls.set('dabogi.t.mtab',MTAB);renderMain()}};
+  app.appendChild(mt);
   const classes=[...new Set(DATA.roster.map(r=>r.cls))];
   if(!classes.includes(clsF))clsF=classes[0]||'';
   if(sel&&sel.split('|')[0]!==clsF)sel=null;
@@ -550,9 +562,11 @@ function renderMain(){
     <span class="hint">시험 기간에 맞춰 기간을 바꾸면 그 기간의 기록만 계산해요. 마지막 불러온 시각 ${hm(Date.now())}</span></section>`);
   f.querySelector('#ffrom').onchange=e=>{from=e.target.value;ls.set('dabogi.t.from',from);renderMain()};
   f.querySelector('#fto').onchange=e=>{to=e.target.value;ls.set('dabogi.t.to',to);renderMain()};
-  f.querySelector('#refresh').onclick=()=>load(DATA.pw,!!ls.get('dabogi.t.pw',''));
+  f.querySelector('#refresh').onclick=()=>{STUDY=null;load(DATA.pw,!!ls.get('dabogi.t.pw',''))};
   f.querySelector('#logout').onclick=()=>{ls.del('dabogi.t.pw');DATA=null;clearInterval(liveTimer);seen=0;renderLogin('잠갔어요.')};
   app.appendChild(f);
+  if(MTAB==='notes'){f.querySelector('.hint').textContent='이 기간에 만든 오답노트만 보여요.';renderNotesTab(classes);return}
+  if(MTAB==='study'){f.querySelector('.filters').querySelectorAll('.field').forEach(x=>x.remove());f.querySelector('.hint').textContent='순공 타이머 기록이에요. 오늘·이번 주·이번 달로 볼 수 있어요.';renderStudyTab(classes);return}
   app.appendChild(h('<section class="panel live" id="live"></section>'));pending=false;renderLive();
   if(!classes.length){app.appendChild(h(`<section class="panel"><div class="empty">스프레드시트 명단 시트에 학생이 없어요. A열에 반, B열에 이름을 적어 주세요.</div></section>`));return}
   /* 1단계: 반 고르기 */
@@ -579,6 +593,37 @@ function renderMain(){
   const back=h(`<button class="btn ghost" style="align-self:flex-start">← ${esc(c)} 전체 보기</button>`);back.onclick=()=>{sel=null;renderMain()};det.prepend(back);
 }
 
+/* ---------- 오답노트 탭 ---------- */
+function classBar(classes,count){const cb=h(`<nav class="classbar" aria-label="반 선택"></nav>`);
+  classes.forEach(c=>{const b=h(`<button class="cb" aria-pressed="${c===clsF}"><b>${esc(c)}</b><span>${count(c)}</span></button>`);b.onclick=()=>{clsF=c;ls.set('dabogi.t.cls',c);renderMain()};cb.appendChild(b)});return cb}
+function renderNotesTab(classes){
+  const all=c=>DATA.roster.filter(r=>r.cls===c).map(r=>({r,nts:notesOf(r.cls,r.name).filter(nt=>inRange(nt.at))}));
+  app.appendChild(classBar(classes,c=>{const a=all(c);return `오답노트 ${a.reduce((s,x)=>s+x.nts.length,0)}개 · ${a.filter(x=>x.nts.length).length}명`}));
+  const p=h(`<section class="panel"><div class="label">${esc(clsF)} 오답노트</div><div class="nlist"></div></section>`);const box=p.querySelector('.nlist');
+  const list=all(clsF).sort((a,b)=>b.nts.length-a.nts.length);
+  list.forEach(({r,nts})=>{const g=h(`<div class="ngroup"><div class="nhead"><b>${esc(r.name)}</b><span class="hint">${nts.length?nts.length+'개':'이 기간에 만든 오답노트가 없어요'}</span></div><div class="tlist"></div></div>`);const tl=g.querySelector('.tlist');
+    nts.forEach(nt=>{const it=h(`<div class="titem"><div><strong>${md(nt.at)} ${hm(nt.at)}</strong> <span class="hint">${esc(nt.title)} · ${nt.keys.length+(nt.bt||[]).length}문제${(nt.bt||[]).length?` (블라인드 ${nt.bt.length}개 포함)`:''}</span></div><div class="row" style="gap:6px;flex-wrap:wrap"><button class="btn small" data-m="q">문제지 PDF</button><button class="btn small ghost" data-m="a">빠른정답 PDF</button></div></div>`);
+      it.querySelectorAll('button').forEach(b=>b.onclick=e=>makeNotePdf(r.cls,r.name,nt,e.currentTarget,b.dataset.m));tl.appendChild(it)});
+    box.appendChild(g)});
+  if(!list.length)box.innerHTML='<p class="hint">이 반에 학생이 없어요.</p>';
+  app.appendChild(p);
+}
+/* ---------- 순공시간 탭 ---------- */
+let STUDY=null,stPer=ls.get('dabogi.t.stper','week');
+function hmS(s){s=Math.round((s||0)/60);const h=Math.floor(s/60),m=s%60;return h?`${h}시간 ${m}분`:`${m}분`}
+async function renderStudyTab(classes){
+  const p=h(`<section class="panel"><div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:8px"><div class="label">${esc(clsF)} 순공시간</div><div class="wtabs" role="tablist">${[['day','오늘'],['week','이번 주'],['month','이번 달']].map(([k,t])=>`<button role="tab" data-per="${k}" aria-selected="${stPer===k}">${t}</button>`).join('')}</div></div><div class="sbody"><p class="hint">불러오는 중…</p></div></section>`);
+  const draw=()=>{const by={};(STUDY.list||[]).forEach(x=>by[x.c+'|'+x.n]=x);
+    const rows=DATA.roster.filter(r=>r.cls===clsF).map(r=>{const x=by[r.cls+'|'+r.name]||{day:[0,0],week:[0,0],month:[0,0]};const v=x[stPer];return {n:r.name,cam:v[0],btn:v[1],t:v[0]+v[1]}}).sort((a,b)=>b.t-a.t);
+    const mx=Math.max(1,...rows.map(r=>r.t));const tot=rows.reduce((a,r)=>({cam:a.cam+r.cam,btn:a.btn+r.btn}),{cam:0,btn:0});
+    p.querySelector('.sbody').innerHTML=`<p class="hint" style="margin:6px 0 10px">반 합계 ${hmS(tot.cam+tot.btn)} · <span class="sdot c"></span>카메라 ${hmS(tot.cam)} · <span class="sdot b"></span>버튼 ${hmS(tot.btn)} · 공부한 학생 ${rows.filter(r=>r.t).length}/${rows.length}명</p>
+     <div class="srank">${rows.map((r,i)=>`<div class="srow ${r.t?'':'none'}"><span class="sn">${r.t?i+1:'-'}</span><b class="snm">${esc(r.n)}</b><span class="sbar"><i class="c" style="width:${r.cam/mx*100}%"></i><i class="b" style="width:${r.btn/mx*100}%"></i></span><span class="st2"><b>${r.t?hmS(r.t):'기록 없음'}</b>${r.t?`<small><span class="sdot c"></span>${hmS(r.cam)} · <span class="sdot b"></span>${hmS(r.btn)}</small>`:''}</span></div>`).join('')}</div>
+     <p class="hint" style="margin-top:10px">${new Date(STUDY.at).toLocaleString('ko-KR')} 기준 · 학생이 인터넷에 연결되어야 기록이 올라와요.</p>`};
+  p.querySelectorAll('[data-per]').forEach(b=>b.onclick=()=>{stPer=b.dataset.per;ls.set('dabogi.t.stper',stPer);p.querySelectorAll('[data-per]').forEach(x=>x.setAttribute('aria-selected',x===b));if(STUDY)draw()});
+  app.appendChild(classBar(classes,c=>`${DATA.roster.filter(r=>r.cls===c).length}명`));app.appendChild(p);
+  try{if(!STUDY||Date.now()-STUDY.at>60000){const j=await(await fetch(EP+'?action=studyrank&t='+Date.now())).json();if(!j.ok)throw 0;STUDY={at:Date.now(),list:j.list}}draw()}
+  catch(e){p.querySelector('.sbody').innerHTML='<p class="hint">순공 기록을 불러오지 못했어요. 인터넷 연결을 확인하고 "새로 불러오기"를 눌러 주세요.</p>'}
+}
 function renderClass(det,c,mem,recs){
   const rows=mem.map(r=>({r,rec:recs[key(r.cls,r.name)]}));
   const act=rows.filter(x=>x.rec.rows.length);
