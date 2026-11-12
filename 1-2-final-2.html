@@ -250,9 +250,10 @@ body.noscroll{overflow:hidden}
 .rsteps span{display:inline-flex;flex-direction:column;align-items:center;min-width:52px;padding:4px 6px;border-radius:7px;background:var(--sheet);border:1px solid var(--line);font-family:var(--f-mono);font-size:13px;color:var(--ink)}
 .rsteps b{font-family:var(--f-body);font-size:11px;font-weight:500;color:var(--muted)}
 .tabhint{margin:-4px 4px 0}
-.maintabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;border-radius:14px;background:var(--sheet);border:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:9}
+.maintabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:5px;border-radius:14px;background:var(--sheet);border:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:9}
 .maintabs button{font:inherit;font-weight:700;font-size:16px;padding:12px 8px;border:0;border-radius:10px;background:none;color:var(--muted);cursor:pointer}
 .maintabs button[aria-selected="true"]{background:var(--band);color:var(--band-ink)}
+.maintabs .mtlink{font-weight:700;font-size:16px;padding:12px 8px;border-radius:10px;color:var(--muted);text-decoration:none;text-align:center}
 .sets{display:flex;flex-direction:column;gap:8px}
 .nset{border:1px solid var(--line);border-radius:10px;background:var(--paper)}
 .nset summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;cursor:pointer;font-weight:700;list-style:none}
@@ -273,31 +274,6 @@ body.noscroll{overflow:hidden}
 .nans>div{display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px dashed var(--line);font-variant-numeric:tabular-nums}
 .nans b{font-family:var(--f-mono);font-weight:500;flex:none}
 .back{align-self:flex-start}
-/* 인쇄: 결과지(ONE REPORT)를 A4에 깔끔하게 — 버튼·머리띠·점무늬는 빼고, 덩어리가 페이지 사이에서 잘리지 않게 */
-@media print{
-  @page{size:A4;margin:10mm}
-  :root{--paper:#fff;--sheet:#fff;--ink:#14202e;--muted:#566373;--line:#d3dbe4}
-  html,body{background:#fff!important;color:#14202e;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  body{background-image:none!important}
-  body:has(.cert.or) header.top,body:has(.cert.or) .maintabs,body:has(.cert.or) .tabhint,body:has(.cert.or) .back,.or-share,.or-again,.toast,.pops,.nbar,.exbar,.sheetbtn{display:none!important}
-  .wrap{max-width:none;padding:0!important;gap:0}
-  .cert.or{animation:none}
-  .or .or-cover,.or .or-sec{box-shadow:none;border:0;border-radius:0;padding:4mm 2mm;margin:0}
-  .or .or-cover{min-height:0;display:block;break-after:avoid}
-  .or .or-cover .stamp{top:6mm;bottom:auto;right:4mm;animation:none}
-  .or-big{margin:8mm 0 6mm;font-size:64px;background:none!important;color:#1a86d6!important;-webkit-text-fill-color:#1a86d6}
-  .or-msg{padding-right:0}
-  .or-logo{width:90px;padding-top:6mm}
-  .or .or-sec{border-top:1px solid #ddd}
-  .or-h{margin:4px 0 8px;font-size:24px}
-  .or-t{margin:12px 0 6px;break-after:avoid}
-  .or-score,.or-meta,.or-chart,.or-round,.or-tl,.or-sum,.or-purpose,.or-item,.wcard,.arow,.tally,.verdict{break-inside:avoid}
-  .or-chart{max-height:62mm;width:auto;margin:0 auto}
-  .or-sum-h{margin:12px 0 6px;break-after:avoid}
-  .or .why{gap:6px}
-  .or .wcard{padding:8px 10px}
-  a{color:inherit;text-decoration:none}
-}
 @media (prefers-reduced-motion:no-preference){.verdict,.cert{animation:pop .25s ease-out}@keyframes pop{from{transform:scale(.98)}to{transform:none}}}
 .pdflink{color:#f4c84a;font-weight:700;text-decoration:underline;white-space:nowrap}
 </style>
@@ -413,7 +389,7 @@ function render(){
   if(view.mode==='teacher') return renderTeacher();
   if(!view.exam&&!autoOpened&&STATE.studentOnly&&!STATE.hub&&STATE.exams.length===1&&prog._me){autoOpened=true;view.exam=STATE.exams[0].id}
   if(view.exam) return renderExam(STATE.exams.find(x=>x.id===view.exam));
-  if(STATE.hub){const tb=h(`<nav class="maintabs" role="tablist"><button role="tab" data-t="blind" aria-selected="${TAB==='blind'}">블라인드 테스트</button><button role="tab" data-t="notes" aria-selected="${TAB==='notes'}">오답노트</button></nav>`);
+  if(STATE.hub){const tb=h(`<nav class="maintabs" role="tablist"><button role="tab" data-t="blind" aria-selected="${TAB==='blind'}">블라인드 테스트</button><button role="tab" data-t="notes" aria-selected="${TAB==='notes'}">오답노트</button><a class="mtlink" href="study/">⏱ 순공 타이머</a></nav>`);
     tb.onclick=e=>{const t=e.target.closest('button');if(t&&t.dataset.t!==TAB)setTab(t.dataset.t)};app.appendChild(tb);
     if(TAB==='notes'){if(PICK&&!(noteView&&noteView.note))renderWho();return renderNotes()}
     app.appendChild(h(`<p class="hint tabhint">몇 번이 틀렸는지는 가려져 있어요. 다 맞을 때까지 처음부터 다시 보면서 스스로 찾아요.</p>`))}
@@ -634,7 +610,7 @@ function renderExam(ex){
     const wrong=[];for(let i=0;i<ex.hashes.length;i++){if(!await matchAns(ex,i,pr.answers[i]))wrong.push(i)}
     const at={w:wrong,a:Object.fromEntries(wrong.map(i=>[i,pr.answers[i]])),t:Date.now(),s:runSec()};pr.attempts.push(at);pr.spent=at.s;
     logEv(wrong.length?'attempt':'done',ex,{attempt:pr.attempts.length,wrong:wrong.map(i=>qn(ex,i)).join(','),wrongCount:wrong.length,
-      extra:wrong.length?JSON.stringify({a:Object.fromEntries(wrong.map(i=>[qn(ex,i),types[i]!=='sa'?String(pr.answers[i]).split(',').map(n=>CIRC[+n]||n).join(''):String(pr.answers[i]).slice(0,40)]))}).slice(0,1990):JSON.stringify({runSec:at.s,startedAt:pr.start,attempts:pr.attempts.map(a=>({t:a.t,s:a.s,w:a.w.map(i=>qn(ex,i))}))})});
+      extra:wrong.length?'':JSON.stringify({runSec:at.s,startedAt:pr.start,attempts:pr.attempts.map(a=>({t:a.t,s:a.s,w:a.w.map(i=>qn(ex,i))}))})});
     if(!wrong.length){pr.done=Date.now();saveProg();sessEnd();render();scrollTo(0,0);return}
     pr.checked=[];saveProg();lay.querySelector('#rules').hidden=true;showVerdict(ex,pr,vbox,gbtn,grid,at);
   };
@@ -724,7 +700,7 @@ function renderCert(ex,pr){
     <div class="or-big">ONE<br>REPORT</div>
     <div class="or-who"><b>${esc(myName())}</b><span>${esc(me.cls||'')}${g?` · ${GRADE_LABEL(g)}`:''}</span><span>${esc(ex.title)}</span></div>
     <p class="or-msg"><b>다 맞았어요!</b> ${everWrong.length?'틀렸던 문제를 AI가 분석했어요. 읽어 보고 이 보고서를 선생님께 보여주세요.':'한 번에 다 맞았어요. 이 화면을 선생님께 보여주세요.'}${EP?' 이 기록은 선생님께 저장됐어요.':''}${pr.remote?'<br><span class="hint">다른 기기에서 통과한 기록을 불러왔어요.</span>':''}</p>
-    <div class="or-share"><button type="button" class="or-kakao" id="kshare"><span aria-hidden="true">💬</span> 카카오톡으로 보내기</button><button type="button" class="btn ghost small" id="oshare">다른 앱으로 보내기</button><button type="button" class="btn ghost small" onclick="print()">🖨 인쇄하기</button></div>
+    <div class="or-share"><button type="button" class="or-kakao" id="kshare"><span aria-hidden="true">💬</span> 카카오톡으로 보내기</button><button type="button" class="btn ghost small" id="oshare">다른 앱으로 보내기</button></div>
     <img class="or-logo" src="https://fermat-math.github.io/blindtest/assets/fermat-logo.png" alt="페르마 수학학원" onerror="this.remove()">
   </div>
   <div class="or-sec"><div class="or-run">one report</div><h2 class="or-h">RESULT <small>진단결과</small></h2>

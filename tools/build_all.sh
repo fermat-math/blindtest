@@ -11,3 +11,4 @@ const fs=require('fs');const m=JSON.parse(fs.readFileSync('tools/pages.json','ut
 for(const [file,p] of Object.entries(m)){const meta=typeof p==='string'?{id:p}:p;
   require('child_process').execFileSync('node',['tools/make_student.js',process.argv[1],meta.id,file].concat(meta.grade?[String(meta.grade)]:[]),{stdio:'inherit'})}" "$1"
 node tools/make_hub.js "$1"
+cp tools/roster.json study/roster.json

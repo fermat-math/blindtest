@@ -250,9 +250,10 @@ body.noscroll{overflow:hidden}
 .rsteps span{display:inline-flex;flex-direction:column;align-items:center;min-width:52px;padding:4px 6px;border-radius:7px;background:var(--sheet);border:1px solid var(--line);font-family:var(--f-mono);font-size:13px;color:var(--ink)}
 .rsteps b{font-family:var(--f-body);font-size:11px;font-weight:500;color:var(--muted)}
 .tabhint{margin:-4px 4px 0}
-.maintabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;border-radius:14px;background:var(--sheet);border:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:9}
+.maintabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:5px;border-radius:14px;background:var(--sheet);border:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:9}
 .maintabs button{font:inherit;font-weight:700;font-size:16px;padding:12px 8px;border:0;border-radius:10px;background:none;color:var(--muted);cursor:pointer}
 .maintabs button[aria-selected="true"]{background:var(--band);color:var(--band-ink)}
+.maintabs .mtlink{font-weight:700;font-size:16px;padding:12px 8px;border-radius:10px;color:var(--muted);text-decoration:none;text-align:center}
 .sets{display:flex;flex-direction:column;gap:8px}
 .nset{border:1px solid var(--line);border-radius:10px;background:var(--paper)}
 .nset summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;cursor:pointer;font-weight:700;list-style:none}
@@ -388,7 +389,7 @@ function render(){
   if(view.mode==='teacher') return renderTeacher();
   if(!view.exam&&!autoOpened&&STATE.studentOnly&&!STATE.hub&&STATE.exams.length===1&&prog._me){autoOpened=true;view.exam=STATE.exams[0].id}
   if(view.exam) return renderExam(STATE.exams.find(x=>x.id===view.exam));
-  if(STATE.hub){const tb=h(`<nav class="maintabs" role="tablist"><button role="tab" data-t="blind" aria-selected="${TAB==='blind'}">블라인드 테스트</button><button role="tab" data-t="notes" aria-selected="${TAB==='notes'}">오답노트</button></nav>`);
+  if(STATE.hub){const tb=h(`<nav class="maintabs" role="tablist"><button role="tab" data-t="blind" aria-selected="${TAB==='blind'}">블라인드 테스트</button><button role="tab" data-t="notes" aria-selected="${TAB==='notes'}">오답노트</button><a class="mtlink" href="study/">⏱ 순공 타이머</a></nav>`);
     tb.onclick=e=>{const t=e.target.closest('button');if(t&&t.dataset.t!==TAB)setTab(t.dataset.t)};app.appendChild(tb);
     if(TAB==='notes'){if(PICK&&!(noteView&&noteView.note))renderWho();return renderNotes()}
     app.appendChild(h(`<p class="hint tabhint">몇 번이 틀렸는지는 가려져 있어요. 다 맞을 때까지 처음부터 다시 보면서 스스로 찾아요.</p>`))}
