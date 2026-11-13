@@ -453,32 +453,29 @@ function loadFace(){
     sc.onerror=()=>res(false);document.head.appendChild(sc)}).then(ok=>{if(!ok)faceLoading=null;return ok});
   return faceLoading;
 }
-/* 얼굴 찾기: ① 보통 크기로 ② 못 찾으면 밝기·대비를 올리고 크게 ③ 가운데를 확대해서 한 번 더 */
+/* 얼굴 찾기: 빈자리를 얼굴로 착각하지 않게 확실할 때만 '있음'으로 봐요.
+   ① 빠른 감지(확실도 0.5 이상) ② 못 찾으면 정밀 감지(0.5 이상) ③ 어두우면 밝게 보정해서 정밀 감지(0.6 이상)
+   너무 작은 얼굴(화면 폭의 10% 미만, 뒤쪽 사진·포스터 등)은 빼요. */
 let fcv=null,mcv=null,prevGray=null;
+const bigFace=(d,w)=>!!d&&d.box.width>=w*0.10;
 async function findFace(v){
-  const T=(n,t)=>new faceapi.TinyFaceDetectorOptions({inputSize:n,scoreThreshold:t});
-  if(await faceapi.detectSingleFace(v,T(320,0.3)))return true;
-  const w=v.videoWidth,h=v.videoHeight;fcv=fcv||document.createElement('canvas');fcv.width=w;fcv.height=h;
-  const c=fcv.getContext('2d',{willReadFrequently:true});c.filter='brightness(1.5) contrast(1.4)';c.drawImage(v,0,0,w,h);c.filter='none';
-  if(await faceapi.detectSingleFace(fcv,T(416,0.2)))return true;
-  const cw=w*.6,ch=h*.6;c.filter='brightness(1.35) contrast(1.3)';c.drawImage(v,(w-cw)/2,(h-ch)/3,cw,ch,0,0,w,h);c.filter='none';
-  if(await faceapi.detectSingleFace(fcv,T(416,0.2)))return true;
-  /* ④ 안경·고개 숙임·옆모습에 더 강한 정밀 감지(처음 한 번만 받아 두고 휴대폰에 저장) */
+  const w=v.videoWidth,h=v.videoHeight;
+  if(bigFace(await faceapi.detectSingleFace(v,new faceapi.TinyFaceDetectorOptions({inputSize:320,scoreThreshold:0.5})),w))return true;
   if(!ssdOK){loadSSD();return false}
-  const O=new faceapi.SsdMobilenetv1Options({minConfidence:0.25,maxResults:1});
-  if(await faceapi.detectSingleFace(v,O))return true;
-  c.filter='brightness(1.5) contrast(1.4)';c.drawImage(v,0,0,w,h);c.filter='none';
-  return !!(await faceapi.detectSingleFace(fcv,O));
+  if(bigFace(await faceapi.detectSingleFace(v,new faceapi.SsdMobilenetv1Options({minConfidence:0.5,maxResults:1})),w))return true;
+  fcv=fcv||document.createElement('canvas');fcv.width=w;fcv.height=h;
+  const c=fcv.getContext('2d',{willReadFrequently:true});c.filter='brightness(1.5) contrast(1.4)';c.drawImage(v,0,0,w,h);c.filter='none';
+  return bigFace(await faceapi.detectSingleFace(fcv,new faceapi.SsdMobilenetv1Options({minConfidence:0.6,maxResults:1})),w);
 }
 let ssdOK=false,ssdLoading=null;
 function loadSSD(){if(ssdOK||ssdLoading)return;ssdLoading=faceapi.nets.ssdMobilenetv1.loadFromUri('vendor/').then(()=>{ssdOK=true}).catch(()=>{ssdLoading=null})}
-/* 움직임 확인: 고개를 숙여 얼굴이 안 잡혀도 손·머리가 움직이면 자리에 있는 걸로 봐요 (빈 의자는 거의 안 움직여요) */
+/* 움직임 확인: 최근 10분 안에 얼굴이 보였던 학생이 고개를 숙여 얼굴이 안 잡혀도, 손·머리가 움직이면 자리에 있는 걸로 봐요 */
 function moved(v){
   mcv=mcv||document.createElement('canvas');mcv.width=64;mcv.height=48;const c=mcv.getContext('2d',{willReadFrequently:true});
   c.drawImage(v,0,0,64,48);const d=c.getImageData(0,0,64,48).data,g=new Uint8Array(64*48);
   for(let i=0;i<g.length;i++)g[i]=(d[i*4]*3+d[i*4+1]*6+d[i*4+2])/10;
-  let n=0;if(prevGray)for(let i=0;i<g.length;i++)if(Math.abs(g[i]-prevGray[i])>12)n++;
-  prevGray=g;return n>g.length*0.006;
+  let n=0;if(prevGray)for(let i=0;i<g.length;i++)if(Math.abs(g[i]-prevGray[i])>15)n++;
+  prevGray=g;return n>g.length*0.01;
 }
 async function checkFace(){
   if(faceBusy||!R)return;const v=$('#vid');if(!v.videoWidth)return;faceBusy=true;
@@ -486,9 +483,9 @@ async function checkFace(){
   try{mov=moved(v)}catch(e){}
   try{seen=await findFace(v)}catch(e){}
   faceBusy=false;if(!R)return;
-  if(seen){R.noFace=0;$('#faceSt').textContent='🙂 얼굴 감지 중';
+  if(seen){R.noFace=0;R.faceAt=Date.now();$('#faceSt').textContent='🙂 얼굴 감지 중';
     if(R.awayPause){R.faceHits++;if(R.faceHits>=BACK_HITS){R.faceHits=0;resume();$('#runWarn').innerHTML='<div class="warn" style="background:#33d17acc">돌아왔어요! 다시 기록해요.</div>';setTimeout(()=>{if(R&&R.running)$('#runWarn').innerHTML=''},3000)}}}
-  else if(mov&&R.running){R.faceHits=0;R.noFace=0;$('#faceSt').textContent='✍️ 움직임으로 확인 중';}
+  else if(mov&&R.running&&Date.now()-(R.faceAt||0)<10*60000){R.faceHits=0;R.noFace=0;$('#faceSt').textContent='✍️ 움직임으로 확인 중';}
   else{R.faceHits=0;
     if(R.running){R.noFace+=FACE_EVERY;$('#faceSt').textContent=`얼굴이 안 보여요 (${R.noFace}초 / ${AWAY_SEC}초)`;
       if(R.noFace>=AWAY_SEC){R.acc=Math.max(0,R.acc-R.noFace);R.noFace=0;R.aways++;pause(`자리를 비워서 멈췄어요 (${R.aways}번째). 얼굴이 다시 보이면 자동으로 다시 시작해요.`);R.awayPause=true}}
