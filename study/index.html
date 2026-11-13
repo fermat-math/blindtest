@@ -90,17 +90,28 @@ h1{font-weight:800;letter-spacing:-.6px}
 input,select{border:1.5px solid transparent}input:focus,select:focus{outline:0;border-color:var(--blue);background:#fff}
 #run{color:#fff}#run .sub{color:#ffffffbb}
 .modal .card{color:var(--ink)}
+#cover{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%,#4a2a12 0%,#1f1208 50%,#000 100%)}
+#coverEmo{font-size:min(46vw,260px);line-height:1;cursor:pointer;user-select:none;-webkit-user-select:none;filter:drop-shadow(0 8px 20px #0004);transition:transform .15s}
+#coverEmo:active{transform:scale(.92)}
+.cvhint{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 110px);font-size:12px;color:#ffffffcc}
+.coverbtn{border:0;border-radius:99px;padding:8px 16px;font:inherit;font-size:14px;font-weight:700;background:#ffffff26;color:#fff;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#run.btnmode .coverbtn,#run.btnmode #cover{display:none}
+#run.covered .ov{background:none}
+#run .ov,#run .ov>div{pointer-events:none}#run .ov>div *{pointer-events:auto}
+.coverbtn.hidden{display:none}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="run" class="hidden">
   <video id="vid" playsinline muted autoplay></video>
+  <div id="cover" class="hidden"><div id="coverEmo">🐻</div><div class="cvhint">화면만 가려요 · 얼굴 감지는 그대로 돼요</div></div>
   <div class="ov">
     <div>
       <div class="row" style="justify-content:space-between">
         <span class="pill" id="runMode"></span><span class="pill" id="runSubj"></span>
       </div>
+      <div style="text-align:center;margin-top:10px"><button id="bCover" class="coverbtn">🙈 내 얼굴 가리기</button> <button id="bEmo" class="coverbtn hidden">🔄 이모티콘 바꾸기</button></div>
       <div style="margin-top:22px" class="clock" id="runClock">00:00:00</div>
       <div class="state" id="runState">공부 중</div>
       <div class="sub" style="text-align:center;margin-top:4px" id="runToday"></div>
@@ -396,7 +407,7 @@ async function startRun(mode){
       run.classList.add('hidden');R=null;releaseAwake();
       alert('카메라를 켤 수 없어요. 카메라 권한을 허용하거나, "버튼으로 기록"을 써 주세요.');return;
     }
-    $('#noSave').classList.remove('hidden');
+    $('#noSave').classList.remove('hidden');applyCover();
   }else{run.classList.add('btnmode');$('#faceSt').classList.add('hidden');$('#noSave').classList.add('hidden')}
   resume();
   R.timer=setInterval(tick,1000);
@@ -464,6 +475,13 @@ function showCheck(){
   $('#cYes').onclick=()=>{clearInterval(checkTimer);m.remove();if(R){R.checkShown=false;R.checkAt=Date.now()+CHECK_MIN*60000}};
 }
 ['pointerdown','touchstart'].forEach(ev=>$('#run').addEventListener(ev,()=>{if(R){R.touch=Date.now();$('#run').classList.remove('dim')}},{passive:true}));
+/* 내 얼굴 가리기: 화면에만 이모티콘을 덮어요. 카메라와 얼굴 감지는 뒤에서 그대로 돌아가요. */
+const EMOS=['🐻','🐶','🐱','🐰','🦊','🐼','🐯','🐸','🐵','🐧','🦁','🐨','😎','🤓','🙂','📚','✏️','⭐'];
+function applyCover(){const on=!!S.cover;$('#cover').classList.toggle('hidden',!on);$('#run').classList.toggle('covered',on);
+  if(on)$('#coverEmo').textContent=S.cover;$('#bCover').textContent=on?'👀 가리기 끄기':'🙈 내 얼굴 가리기';$('#bEmo').classList.toggle('hidden',!on)}
+$('#bCover').onclick=e=>{e.stopPropagation();S.cover=S.cover?'':(S.coverLast||EMOS[0]);save();applyCover()};
+const nextEmo=e=>{e.stopPropagation();const i=(EMOS.indexOf(S.cover)+1)%EMOS.length;S.cover=S.coverLast=EMOS[i];save();applyCover()};
+$('#coverEmo').onclick=nextEmo;$('#bEmo').onclick=nextEmo;
 $('#bPause').onclick=()=>{if(!R)return;R.running?pause():resume()};
 $('#bStop').onclick=()=>finishRun();
 function finishRun(autoMsg){
