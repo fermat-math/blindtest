@@ -105,6 +105,14 @@ input,select{border:1.5px solid transparent}input:focus,select:focus{outline:0;b
 #bEmo.coverbtn{background:#ffffff2e!important;box-shadow:none}
 #fbox{position:absolute;z-index:1;display:none;border:3px solid #ff8a1f;border-radius:14px;box-shadow:0 0 0 2px #0004;pointer-events:none;transition:all .3s}
 #run.dim #fbox,#run.btnmode #fbox{display:none!important}
+.cal div[data-day]{cursor:pointer}
+.cal div.today{box-shadow:inset 0 0 0 2px #19191f33}
+.cal div.sel{box-shadow:inset 0 0 0 2.5px #191f28;font-weight:800}
+.calnav{border:0;background:var(--soft);border-radius:10px;width:34px;height:30px;font-size:20px;line-height:1;color:var(--ink)}
+.calnav:disabled{opacity:.3}
+.tl{position:relative;height:26px;background:var(--soft);border-radius:8px;margin-top:12px;overflow:hidden;background-image:linear-gradient(90deg,transparent calc(25% - 1px),#dfe3e8 calc(25% - 1px),#dfe3e8 25%,transparent 25%,transparent calc(50% - 1px),#dfe3e8 calc(50% - 1px),#dfe3e8 50%,transparent 50%,transparent calc(75% - 1px),#dfe3e8 calc(75% - 1px),#dfe3e8 75%,transparent 75%)}
+.tl i{position:absolute;top:0;bottom:0;border-radius:3px}.tl i.c{background:var(--cam)}.tl i.b{background:var(--btn)}
+.tlx{display:flex;justify-content:space-between;font-size:10px;color:var(--sub);margin-top:3px}
 </style>
 </head>
 <body>
@@ -144,7 +152,7 @@ const CHECK_WAIT=120;        /* 확인 버튼을 누를 때까지 기다리는 �
 const DARK_SEC=15;           /* (얼굴 감지가 안 될 때) 카메라가 이만큼 가려지면 자동 일시정지 */
 const AWAY_SEC=20;
 const MOVE_MAX=45;           /* 얼굴은 안 보여도 움직임이 있으면 최대 이만큼까지 기다림 */
-const VER='11.17-1';           /* 얼굴이 이만큼 안 보이면 자리 이탈로 보고 멈춤, 그 시간은 뺌 */
+const VER='11.17-2';           /* 얼굴이 이만큼 안 보이면 자리 이탈로 보고 멈춤, 그 시간은 뺌 */
 const BACK_HITS=2;           /* 얼굴이 연속 이만큼 보이면 자동으로 다시 시작 */
 const FACE_EVERY=2;          /* 배터리 절약: 몇 초마다 얼굴을 확인할지 */
 const DIM_AFTER=60;          /* 배터리 절약: 화면을 안 만지면 몇 초 뒤 절전 화면 */
@@ -260,7 +268,7 @@ function bindHome(){
   document.querySelectorAll('[data-subj]').forEach(b=>b.onclick=()=>{S.subj=b.dataset.subj;save();render()});
   $('#homeCover').onclick=()=>{S.cover=S.cover?'':(S.coverLast||'🐻');save();render()};$('#goCam').onclick=()=>startRun('cam');$('#goBtn').onclick=()=>startRun('btn');
 }
-let statRange='week';
+let statRange='week',calOff=0,statDay=dkey(Date.now());
 function statView(){
   const days=statRange==='week'?7:30,arr=[];
   for(let i=days-1;i>=0;i--){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i);const k=dkey(d);arr.push({k,d,...sumBy(x=>dkey(x.start)===k)})}
@@ -271,20 +279,36 @@ function statView(){
     ((days===7||i%5===0)?`<text x="${X+w/2}" y="${H-5}" font-size="10" fill="#8b95a1" text-anchor="middle">${days===7?'일월화수목금토'[x.d.getDay()]:x.d.getDate()}</text>`:'')}).join('');
   const hrs=Math.ceil(max/3600),grid=[...Array(hrs+1).keys()].filter(h=>hrs<=6||h%2===0).map(h=>{const y=H-20-h*3600/max*(H-30);return `<line x1="28" x2="${W}" y1="${y}" y2="${y}" stroke="#eceef1"/><text x="22" y="${y+3}" font-size="9" fill="#8b95a1" text-anchor="end">${h}h</text>`}).join('');
   /* 이번 달 달력 */
-  const now=new Date(),first=new Date(now.getFullYear(),now.getMonth(),1),nd=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const now=new Date(new Date().getFullYear(),new Date().getMonth()+calOff,1),first=new Date(now.getFullYear(),now.getMonth(),1),nd=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
   let cal='';for(let i=0;i<first.getDay();i++)cal+='<div></div>';
   for(let d=1;d<=nd;d++){const k=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(d),s=sumBy(x=>dkey(x.start)===k).all,a=s?Math.min(1,.25+s/(4*3600)):0;
-    cal+=`<div style="background:${a?`rgba(255,109,0,${a})`:'#f2f4f6'}" title="${hm(s)}">${d}</div>`}
+    cal+=`<div data-day="${k}" class="${k===statDay?'sel':''} ${k===dkey(Date.now())?'today':''}" style="background:${a?`rgba(255,109,0,${a})`:'#f2f4f6'};${a>.6?'color:#fff;':''}" title="${hm(s)}">${d}</div>`}
   const recent=[...S.sessions].sort((a,b)=>b.start-a.start).slice(0,15);
   return `<h1>내 기록</h1>
   <div class="card"><div class="seg"><button data-r="week" class="${statRange==='week'?'on':''}">최근 7일</button><button data-r="month" class="${statRange==='month'?'on':''}">최근 30일</button></div>
    <div class="row"><div><div class="sub">합계</div><div style="font-size:24px;font-weight:800">${hm(tot.cam+tot.btn)}</div></div>
    <div style="margin-left:auto;text-align:right" class="sub"><div><span class="dot cam"></span> 카메라 ${hm(tot.cam)}</div><div><span class="dot btnc"></span> 버튼 ${hm(tot.btn)}</div><div>하루 평균 ${hm((tot.cam+tot.btn)/days)}</div></div></div>
    <svg viewBox="0 0 ${W} ${H}" width="100%" style="margin-top:8px">${grid}${bars}</svg></div>
-  <div class="card"><div class="sub">${now.getMonth()+1}월 공부 달력 (진할수록 많이 공부한 날)</div><div class="cal">${'일월화수목금토'.split('').map(c=>`<div style="aspect-ratio:auto;color:#8b95a1">${c}</div>`).join('')}${cal}</div></div>
+  <div class="card"><div class="row" style="justify-content:space-between;align-items:center"><button class="calnav" data-cm="-1">‹</button><b>${now.getFullYear()}년 ${now.getMonth()+1}월 공부 달력</b><button class="calnav" data-cm="1" ${calOff>=0?'disabled':''}>›</button></div>
+   <div class="sub" style="text-align:center;margin-top:2px">진할수록 많이 공부한 날 · 날짜를 누르면 그날 언제 공부했는지 보여요</div><div class="cal">${'일월화수목금토'.split('').map(c=>`<div style="aspect-ratio:auto;color:#8b95a1">${c}</div>`).join('')}${cal}</div></div>
+  ${dayDetail(statDay)}
   <div class="card list"><div class="sub" style="margin-bottom:4px">최근 기록</div>${recent.length?recent.map(x=>{const d=new Date(x.start);return `<div class="it"><span><span class="dot ${x.mode==='cam'?'cam':'btnc'}"></span> ${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())} · ${esc(x.subj)}${x.leaves?` <span class="sub">(이탈 ${x.leaves}번)</span>`:''}</span><b>${hm(x.sec)}</b></div>`}).join(''):'<div class="sub">아직 기록이 없어요.</div>'}</div>`;
 }
-function bindStat(){document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{statRange=b.dataset.r;render()})}
+function bindStat(){document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{statRange=b.dataset.r;render()});
+  document.querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{statDay=b.dataset.day;render();setTimeout(()=>document.getElementById('dayDetail')?.scrollIntoView({behavior:'smooth',block:'nearest'}),30)});
+  document.querySelectorAll('[data-cm]').forEach(b=>b.onclick=()=>{calOff=Math.min(0,calOff+Number(b.dataset.cm));render()})}
+/* 날짜별 상세: 하루 24시간 막대 위에 공부한 시간대를 칠하고, 기록을 시간순으로 보여 줘요 */
+function dayDetail(k){
+  const list=S.sessions.filter(x=>dkey(x.start)===k).sort((a,b)=>a.start-b.start);
+  const [y,m,d]=k.split('-').map(Number),dt=new Date(y,m-1,d),day0=dt.getTime();
+  const tot=list.reduce((s,x)=>s+x.sec,0),cam=list.filter(x=>x.mode==='cam').reduce((s,x)=>s+x.sec,0);
+  const segs=list.map(x=>{const a=(x.start-day0)/864e5*100;return `<i class="${x.mode==='cam'?'c':'b'}" style="left:${a}%;width:${Math.min(100-a,Math.max(.6,x.sec/86400*100))}%"></i>`}).join('');
+  const t=x=>{const q=new Date(x);return pad(q.getHours())+':'+pad(q.getMinutes())};
+  return `<div class="card" id="dayDetail"><div class="row" style="justify-content:space-between"><b>${m}월 ${d}일 (${'일월화수목금토'[dt.getDay()]})</b><b style="color:var(--blue)">${tot?hm(tot):'기록 없음'}</b></div>
+   ${tot?`<div class="sub" style="margin-top:2px"><span class="dot cam"></span> 카메라 ${hm(cam)} · <span class="dot btnc"></span> 버튼 ${hm(tot-cam)} · ${list.length}번 공부</div>`:''}
+   <div class="tl">${segs}</div><div class="tlx"><span>0시</span><span>6시</span><span>12시</span><span>18시</span><span>24시</span></div>
+   ${list.length?`<div class="list" style="margin-top:6px">${list.map(x=>`<div class="it"><span><span class="dot ${x.mode==='cam'?'cam':'btnc'}"></span> <b>${t(x.start)}</b> 시작 · ${esc(x.subj)}${x.leaves?` <span class="sub">(이탈 ${x.leaves}번)</span>`:''}</span><b>${hm(x.sec)}</b></div>`).join('')}</div>`:'<div class="sub" style="text-align:center;padding:10px 0">이날은 공부 기록이 없어요</div>'}
+  </div>`}
 /* ===== 주간·월간 리포트 카드 ===== */
 let repPer='week',repOff=0;
 function repRange(per,off){const n=new Date();n.setHours(0,0,0,0);let a,b;
