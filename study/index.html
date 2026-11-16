@@ -103,12 +103,14 @@ input,select{border:1.5px solid transparent}input:focus,select:focus{outline:0;b
 .coverpick.on{border:1.5px solid var(--blue);background:#fff2e8;color:var(--blue)}
 .coverbtn{background:#ff6d00!important;box-shadow:0 4px 14px rgba(255,109,0,.45);font-size:15px!important;padding:10px 18px!important}
 #bEmo.coverbtn{background:#ffffff2e!important;box-shadow:none}
+#fbox{position:absolute;z-index:1;display:none;border:3px solid #ff8a1f;border-radius:14px;box-shadow:0 0 0 2px #0004;pointer-events:none;transition:all .3s}
+#run.dim #fbox,#run.btnmode #fbox{display:none!important}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="run" class="hidden">
-  <video id="vid" playsinline muted autoplay></video>
+  <video id="vid" playsinline muted autoplay></video><div id="fbox"></div>
   <div id="cover" class="hidden"><div id="coverEmo">🐻</div><div class="cvhint">화면만 가려요 · 얼굴 감지는 그대로 돼요</div></div>
   <div class="ov">
     <div>
@@ -141,8 +143,8 @@ const CHECK_MIN=25;          /* 버튼 모드: 몇 분마다 "공부 중인가�
 const CHECK_WAIT=120;        /* 확인 버튼을 누를 때까지 기다리는 시간(초) */
 const DARK_SEC=15;           /* (얼굴 감지가 안 될 때) 카메라가 이만큼 가려지면 자동 일시정지 */
 const AWAY_SEC=20;
-const MOVE_MAX=60;           /* 얼굴은 안 보여도 움직임이 있으면 최대 이만큼까지 기다림 */
-const VER='11.16-1';           /* 얼굴이 이만큼 안 보이면 자리 이탈로 보고 멈춤, 그 시간은 뺌 */
+const MOVE_MAX=45;           /* 얼굴은 안 보여도 움직임이 있으면 최대 이만큼까지 기다림 */
+const VER='11.17-1';           /* 얼굴이 이만큼 안 보이면 자리 이탈로 보고 멈춤, 그 시간은 뺌 */
 const BACK_HITS=2;           /* 얼굴이 연속 이만큼 보이면 자동으로 다시 시작 */
 const FACE_EVERY=2;          /* 배터리 절약: 몇 초마다 얼굴을 확인할지 */
 const DIM_AFTER=60;          /* 배터리 절약: 화면을 안 만지면 몇 초 뒤 절전 화면 */
@@ -465,16 +467,26 @@ function loadFace(){
    ① 빠른 감지(확실도 0.5 이상) ② 못 찾으면 정밀 감지(0.5 이상) ③ 어두우면 밝게 보정해서 정밀 감지(0.6 이상)
    너무 작은 얼굴(화면 폭의 10% 미만, 뒤쪽 사진·포스터 등)은 빼요. */
 let fcv=null,mcv=null,prevGray=null;
-const bigFace=(d,w)=>!!d&&d.box.width>=w*0.10;
+/* 인정하는 얼굴: 화면 폭의 15% 이상이고, 학생 화면에 실제로 보이는 영역 안에 얼굴이 통째로 들어와 있을 때만.
+   (화면 밖 가장자리에 살짝 걸친 얼굴, 지나가며 스친 얼굴은 빼요) */
+function visArea(v){const W=v.clientWidth||1,H=v.clientHeight||1,w=v.videoWidth,h=v.videoHeight,sc=Math.max(W/w,H/h);
+  const vw=W/sc,vh=H/sc;return {x:(w-vw)/2,y:(h-vh)/2,w:vw,h:vh,sc,W,H}}
+function okFace(d,v){if(!d)return null;const b=d.box,A=visArea(v);
+  if(b.width<A.w*0.15)return null;
+  const m=b.width*0.1;if(b.x<A.x-m||b.y<A.y-m||b.x+b.width>A.x+A.w+m||b.y+b.height>A.y+A.h+m)return null;return b}
 async function findFace(v){
-  const w=v.videoWidth,h=v.videoHeight;
-  if(bigFace(await faceapi.detectSingleFace(v,new faceapi.TinyFaceDetectorOptions({inputSize:320,scoreThreshold:0.5})),w))return true;
-  if(!ssdOK){loadSSD();return false}
-  if(bigFace(await faceapi.detectSingleFace(v,new faceapi.SsdMobilenetv1Options({minConfidence:0.5,maxResults:1})),w))return true;
+  const w=v.videoWidth,h=v.videoHeight;let b;
+  if(b=okFace(await faceapi.detectSingleFace(v,new faceapi.TinyFaceDetectorOptions({inputSize:320,scoreThreshold:0.5})),v))return b;
+  if(!ssdOK){loadSSD();return null}
+  if(b=okFace(await faceapi.detectSingleFace(v,new faceapi.SsdMobilenetv1Options({minConfidence:0.5,maxResults:1})),v))return b;
   fcv=fcv||document.createElement('canvas');fcv.width=w;fcv.height=h;
   const c=fcv.getContext('2d',{willReadFrequently:true});c.filter='brightness(1.5) contrast(1.4)';c.drawImage(v,0,0,w,h);c.filter='none';
-  return bigFace(await faceapi.detectSingleFace(fcv,new faceapi.SsdMobilenetv1Options({minConfidence:0.6,maxResults:1})),w);
+  return okFace(await faceapi.detectSingleFace(fcv,new faceapi.SsdMobilenetv1Options({minConfidence:0.6,maxResults:1})),v);
 }
+/* 찾은 얼굴 자리에 주황 테두리를 그려서, 무엇을 얼굴로 봤는지 학생이 바로 알 수 있게 */
+function drawBox(b,v){const el=$('#fbox');if(!el)return;if(!b||S.cover){el.style.display='none';return}
+  const A=visArea(v);const x=(b.x-A.x)*A.sc,y=(b.y-A.y)*A.sc;
+  el.style.display='block';el.style.left=(A.W-x-b.width*A.sc)+'px';el.style.top=y+'px';el.style.width=b.width*A.sc+'px';el.style.height=b.height*A.sc+'px'}
 let ssdOK=false,ssdLoading=null;
 function loadSSD(){if(ssdOK||ssdLoading)return;ssdLoading=faceapi.nets.ssdMobilenetv1.loadFromUri('vendor/').then(()=>{ssdOK=true}).catch(()=>{ssdLoading=null})}
 function moved(v){
@@ -489,9 +501,11 @@ async function checkFace(){
   if(faceBusy||!R)return;const v=$('#vid');if(!v.videoWidth)return;faceBusy=true;
   let seen=false,mov=false;
   try{mov=moved(v)}catch(e){}
-  try{seen=await findFace(v)}catch(e){}
+  let box=null;try{box=await findFace(v)}catch(e){}
   faceBusy=false;if(!R)return;
   if(mov)R.movAt=Date.now();
+  /* 연속 2번 보여야 '얼굴 있음' — 움직이다 한 번 스친 건 무시해서 시간이 끊기지 않고 이어지는 걸 막아요 */
+  R.hit=box?(R.hit||0)+1:0;drawBox(box,v);seen=R.hit>=2;
   if(seen){R.noFace=0;R.missAt=0;$('#faceSt').textContent='🙂 얼굴 감지 중';
     if(R.awayPause){R.faceHits++;if(R.faceHits>=BACK_HITS){R.faceHits=0;resume();$('#runWarn').innerHTML='<div class="warn" style="background:#33d17acc">돌아왔어요! 다시 기록해요.</div>';setTimeout(()=>{if(R&&R.running)$('#runWarn').innerHTML=''},3000)}}}
   else{R.faceHits=0;
