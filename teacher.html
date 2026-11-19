@@ -598,13 +598,18 @@ function renderMain(){
 function classBar(classes,count){const cb=h(`<nav class="classbar" aria-label="반 선택"></nav>`);
   classes.forEach(c=>{const b=h(`<button class="cb" aria-pressed="${c===clsF}"><b>${esc(c)}</b><span>${count(c)}</span></button>`);b.onclick=()=>{clsF=c;ls.set('dabogi.t.cls',c);renderMain()};cb.appendChild(b)});return cb}
 function renderNotesTab(classes){
-  const all=c=>DATA.roster.filter(r=>r.cls===c).map(r=>({r,nts:notesOf(r.cls,r.name).filter(nt=>inRange(nt.at))}));
+  /* 학생은 틀린 번호를 더할 때마다 '오답노트 만들기'를 다시 눌러서, 같은 교재 오답노트가 여러 번 쌓여요.
+     교재마다 가장 최근 것(이전 번호가 다 들어 있음)만 보여 주고, 예전 것은 접어 둬요. */
+  const all=c=>DATA.roster.filter(r=>r.cls===c).map(r=>{const raw=notesOf(r.cls,r.name).filter(nt=>inRange(nt.at)).sort((a,b)=>b.at-a.at);
+    const by={};raw.forEach(nt=>{(by[nt.book]=by[nt.book]||[]).push(nt)});return {r,nts:Object.values(by).map(a=>({...a[0],old:a.slice(1)}))}});
   app.appendChild(classBar(classes,c=>{const a=all(c);return `오답노트 ${a.reduce((s,x)=>s+x.nts.length,0)}개 · ${a.filter(x=>x.nts.length).length}명`}));
   const p=h(`<section class="panel"><div class="label">${esc(clsF)} 오답노트</div><div class="nlist"></div></section>`);const box=p.querySelector('.nlist');
   const list=all(clsF).sort((a,b)=>b.nts.length-a.nts.length);
-  list.forEach(({r,nts})=>{const g=h(`<div class="ngroup"><div class="nhead"><b>${esc(r.name)}</b><span class="hint">${nts.length?nts.length+'개':'이 기간에 만든 오답노트가 없어요'}</span></div><div class="tlist"></div></div>`);const tl=g.querySelector('.tlist');
-    nts.forEach(nt=>{const it=h(`<div class="titem"><div><strong>${md(nt.at)} ${hm(nt.at)}</strong> <span class="hint">${esc(nt.title)} · ${nt.keys.length+(nt.bt||[]).length}문제${(nt.bt||[]).length?` (블라인드 ${nt.bt.length}개 포함)`:''}</span></div><div class="row" style="gap:6px;flex-wrap:wrap"><button class="btn small" data-m="q">문제지 PDF</button><button class="btn small ghost" data-m="a">빠른정답 PDF</button></div></div>`);
-      it.querySelectorAll('button').forEach(b=>b.onclick=e=>makeNotePdf(r.cls,r.name,nt,e.currentTarget,b.dataset.m));tl.appendChild(it)});
+  list.forEach(({r,nts})=>{const g=h(`<div class="ngroup"><div class="nhead"><b>${esc(r.name)}</b><span class="hint">${nts.length?`교재 ${nts.length}개`+(nts.some(x=>x.old.length)?` · 만든 횟수 ${nts.reduce((t,x)=>t+1+x.old.length,0)}번`:''):'이 기간에 만든 오답노트가 없어요'}</span></div><div class="tlist"></div></div>`);const tl=g.querySelector('.tlist');
+    const item=(nt,sub)=>{const it=h(`<div class="titem"${sub?' style="opacity:.75"':''}><div><strong>${md(nt.at)} ${hm(nt.at)}</strong> <span class="hint">${esc(nt.title)} · ${nt.keys.length+(nt.bt||[]).length}문제${(nt.bt||[]).length?` (블라인드 ${nt.bt.length}개 포함)`:''}${!sub&&nt.old.length?` · <b>최신</b>`:''}</span></div><div class="row" style="gap:6px;flex-wrap:wrap"><button class="btn small" data-m="q">문제지 PDF</button><button class="btn small ghost" data-m="a">빠른정답 PDF</button></div></div>`);
+      it.querySelectorAll('button').forEach(b=>b.onclick=e=>makeNotePdf(r.cls,r.name,nt,e.currentTarget,b.dataset.m));return it};
+    nts.forEach(nt=>{tl.appendChild(item(nt,false));
+      if(nt.old.length){const d=h(`<details class="nold"><summary class="hint">같은 교재로 예전에 만든 오답노트 ${nt.old.length}개 보기</summary></details>`);nt.old.forEach(o=>d.appendChild(item(o,true)));tl.appendChild(d)}});
     box.appendChild(g)});
   if(!list.length)box.innerHTML='<p class="hint">이 반에 학생이 없어요.</p>';
   app.appendChild(p);
