@@ -1,5 +1,5 @@
-const C='fermat-study-v21';
-self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','roster.json','vendor/face-api.js','vendor/tiny_face_detector_model-weights_manifest.json','vendor/tiny_face_detector_model.bin'])).then(()=>self.skipWaiting()))});
+const C='fermat-study-v22';
+self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','roster.json','vendor/human.esm.js','vendor/blazeface-front.json','vendor/blazeface-front.bin','vendor/movenet-lightning.json','vendor/movenet-lightning.bin'])).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 /* 화면(HTML)과 명단은 인터넷이 되면 항상 새로 받아요(고친 내용이 바로 보이게). 안 되면 저장해 둔 걸 써요.
    나머지 파일(얼굴 감지 파일 등)은 저장해 둔 걸 먼저 써서 데이터를 아껴요. Apps Script 요청은 그대로 보내요. */
