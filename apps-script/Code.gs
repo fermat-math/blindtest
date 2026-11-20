@@ -147,6 +147,7 @@ function studySave_(p) {
       return [new Date(), who.cls, who.name, x.id, new Date(x.start), x.sec, x.mode, x.subj, x.leaves];
     });
     if (rows.length) sh.getRange(sh.getLastRow() + 1, 1, rows.length, STUDY_HEADER.length).setValues(rows);
+    SpreadsheetApp.flush(); // 다음 요청이 방금 쓴 줄을 보고 중복을 거르도록 바로 저장
   } finally { lock.releaseLock(); }
   CacheService.getScriptCache().remove('studyrank');
   return { ok: true };
@@ -165,8 +166,10 @@ function studyRank_() {
   weekStart.setDate(weekStart.getDate() - wd);
   var sh = studySheet_(), n = sh.getLastRow() - 1, by = {};
   roster_().forEach(function (r) { by[r.cls + '|' + r.name] = { c: r.cls, n: r.name, day: [0, 0], week: [0, 0], month: [0, 0] }; });
+  var seen = {};
   if (n > 0) sh.getRange(2, 2, n, 6).getValues().forEach(function (r) {
     var k = r[0] + '|' + r[1], o = by[k]; if (!o) return;
+    if (seen[r[2]]) return; seen[r[2]] = 1; // 같은 기록 ID가 두 번 들어간 줄은 한 번만 셈
     var t = new Date(r[3]), sec = Number(r[4]) || 0, i = r[5] === '카메라' ? 0 : 1;
     if (Utilities.formatDate(t, tz, 'yyyy-MM') === monKey) o.month[i] += sec;
     if (t >= weekStart) o.week[i] += sec;
