@@ -383,7 +383,7 @@ const myName=()=>prog._me?prog._me.name:(prog._name||'');
 /* 학년: 반 이름 앞 숫자(7→중1, 8→중2, 9→중3). 시험에는 grade(7/8/9)를 붙여 둔다. */
 const gradeOf=c=>{const m=String(c||'').match(/^\s*(\d)/);return m?+m[1]:null};
 const GRADE_LABEL=g=>g>=7&&g<=9?`중${g-6}`:g>=1&&g<=6?`초${g}`:g>=10&&g<=12?`고${g-9}`:'';
-const myGrade=()=>prog._me?gradeOf(prog._me.cls):null;
+const myGrade=()=>prog._me?(prog._me.grade||gradeOf(prog._me.cls)):null;
 const examVisible=ex=>{const k=prog._me?prog._me.cls+'|'+prog._me.name:'';
   if(ex.who&&ex.who.length)return !k||ex.who.includes(k);   /* 특정 학생에게만 보이는 시험 */
   if(k&&ex.hideFor&&ex.hideFor.includes(k))return false;     /* 특정 학생에게는 안 보이는 시험 */
@@ -397,7 +397,7 @@ let queue=[];try{queue=JSON.parse(localStorage.getItem(QKEY)||'[]')||[]}catch(e)
 const saveQ=()=>{try{localStorage.setItem(QKEY,JSON.stringify(queue.slice(-300)))}catch(e){}};
 const device=(()=>{try{let d=localStorage.getItem('dabogi.dev');if(!d){d=Math.random().toString(36).slice(2,10);localStorage.setItem('dabogi.dev',d)}return d}catch(e){return 'x'}})();
 let flushing=false;
-async function flush(){if(!EP||flushing||!queue.length)return;flushing=true;
+async function flush(){if(prog._me&&prog._me.guest){queue.length=0;saveQ();return}if(!EP||flushing||!queue.length)return;flushing=true;
   try{while(queue.length){const batch=queue.slice(0,5);const r=await fetch(EP+'?action=log&d='+encodeURIComponent(JSON.stringify(batch)));const j=await r.json();if(!j||!j.results)break;queue.splice(0,batch.length);saveQ()}}catch(e){}
   flushing=false}
 const sess={id:null,ex:null,active:0,visSince:0,base:0};
@@ -413,7 +413,7 @@ function remotePr(ex,r){let x={};try{x=JSON.parse(r.extra||'{}')||{}}catch(e){}c
   const atts=(x.attempts||[]).map(a=>({w:(a.w||[]).map(q=>q-st),a:{},t:a.t,s:a.s}));if(!atts.length)atts.push({w:[],a:{},t:r.at,s:x.runSec});
   return {answers:Array((ex.hashes||[]).length||ex.n||0).fill(''),attempts:atts,start:x.startedAt||r.at,done:r.at,spent:x.runSec||atts[atts.length-1].s||0,remote:true,reported:true}}
 function srvDone(ex){const r=prog._srv&&prog._srv[ex.id];if(!r)return null;const h=(prog._hist&&prog._hist[ex.id])||[];if(h.some(x=>x.done&&r.at<=x.done+60000))return null;return r}
-async function syncPass(){if(!EP||!prog._me||STATE.teacherView)return;const k=ukey(prog._me);if(synced===k)return;synced=k;
+async function syncPass(){if(!EP||!prog._me||prog._me.guest||STATE.teacherView)return;const k=ukey(prog._me);if(synced===k)return;synced=k;
   try{const j=await(await fetch(EP+'?action=mine&cls='+encodeURIComponent(prog._me.cls)+'&name='+encodeURIComponent(prog._me.name))).json();
     if(!j||!j.ok||!j.passed||ukey(prog._me)!==k)return;
     const before=JSON.stringify(prog._srv||{});prog._srv=j.passed;saveProg();
@@ -588,7 +588,7 @@ function mathView(v){let t=esc(String(v||''));if(!t)return '';
   t=t.replace(new RegExp(OP+'/'+OP,'gi'),(m,p,q)=>`<span class="frac"><span>${mathInner(strip(p))}</span><span>${mathInner(strip(q))}</span></span>`);
   return mathInner(t).replace(/-/g,'−')}
 function renderWho(){
-  if(prog._me){const p=h(`<section class="panel"><div class="row" style="justify-content:space-between"><div><div class="label">내 이름</div><strong style="font-size:18px">${esc(prog._me.cls)} ${esc(prog._me.name)}</strong></div><button class="btn ghost small" id="wchange">다른 이름으로 바꾸기</button></div><p class="hint" style="margin:0">${EP?'채점 기록은 선생님께 저장돼요.':'이 화면은 미리보기라 기록이 저장되지 않아요.'}${queue.length?` 아직 보내지 못한 기록 ${queue.length}개는 인터넷이 연결되면 자동으로 보내요.`:''}</p></section>`);
+  if(prog._me){const p=h(`<section class="panel"><div class="row" style="justify-content:space-between"><div><div class="label">내 이름</div><strong style="font-size:18px">${esc(prog._me.cls)} ${esc(prog._me.name)}</strong></div><button class="btn ghost small" id="wchange">다른 이름으로 바꾸기</button></div><p class="hint" style="margin:0">${prog._me.guest?'명단에 없는 이름이라 채점 기록은 이 휴대폰에만 남고 선생님께는 저장되지 않아요.':EP?'채점 기록은 선생님께 저장돼요.':'이 화면은 미리보기라 기록이 저장되지 않아요.'}${queue.length?` 아직 보내지 못한 기록 ${queue.length}개는 인터넷이 연결되면 자동으로 보내요.`:''}</p></section>`);
     p.querySelector('#wchange').onclick=()=>{setMe(null);render()};app.appendChild(p);return}
   const R=Array.isArray(STATE.roster)?STATE.roster:[];
   if(R.length){
@@ -599,6 +599,20 @@ function renderWho(){
     const fill=()=>{const list=R.filter(r=>r.cls===cs.value);ns.disabled=!list.length;ns.innerHTML=list.length?'<option value="">이름을 골라요</option>'+list.map(r=>`<option>${esc(r.name)}</option>`).join(''):'<option value="">먼저 반을 골라요</option>';ok.disabled=true};
     cs.onchange=fill;ns.onchange=()=>{ok.disabled=!ns.value};fill();
     ok.onclick=()=>{if(!cs.value||!ns.value)return;setMe({cls:cs.value,name:ns.value});render()};
+    /* 명단에 없는 학생: 학년·반·이름을 직접 적고 시험을 볼 수 있어요(기록은 이 휴대폰에만) */
+    const gb=h(`<div style="margin-top:10px"><button class="btn ghost small" id="wguest" type="button">명단에 내 이름이 없어요</button>
+      <div id="gbox" hidden style="margin-top:10px"><div class="krow"><div class="field"><label class="label" for="gg">학년</label><select id="gg"><option value="">학년을 골라요</option><option value="7">중1</option><option value="8">중2</option><option value="9">중3</option></select></div>
+      <div class="field"><label class="label" for="gc">반</label><input type="text" id="gc" placeholder="예: 2반" autocomplete="off"></div>
+      <div class="field" style="flex:2 1 140px"><label class="label" for="gn">이름</label><input type="text" id="gn" placeholder="예: 김민준" autocomplete="off"></div></div>
+      <div class="row"><button class="btn" id="gok" type="button" disabled>이 이름으로 시험 보기</button><span class="hint">명단에 없는 이름은 채점 기록이 선생님께 저장되지 않아요.</span></div></div></div>`);
+    p.appendChild(gb);
+    const gg=gb.querySelector('#gg'),gc=gb.querySelector('#gc'),gn=gb.querySelector('#gn'),gok=gb.querySelector('#gok');
+    gb.querySelector('#wguest').onclick=()=>{const b=gb.querySelector('#gbox');b.hidden=!b.hidden};
+    const gchk=()=>{gok.disabled=!(gg.value&&gc.value.trim()&&gn.value.trim())};[gg,gc,gn].forEach(x=>x.oninput=x.onchange=gchk);
+    gok.onclick=()=>{const name=gn.value.trim(),c=gc.value.trim();if(!gg.value||!c||!name)return;
+      const hit=R.find(r=>r.name===name&&r.cls===c);
+      if(hit){setMe({cls:hit.cls,name:hit.name});render();return}  /* 사실 명단에 있으면 그 이름으로 */
+      setMe({cls:c,name,guest:true,grade:+gg.value});render()};
     app.appendChild(p);return}
   const p=h(`<section class="panel"><div class="krow"><div class="field"><label class="label" for="wcls">반</label><input type="text" id="wcls" placeholder="예: 2-1" autocomplete="off"></div><div class="field" style="flex:2 1 160px"><label class="label" for="wname">이름</label><input type="text" id="wname" placeholder="예: 김민준" autocomplete="off"></div></div><div class="row"><button class="btn" id="wok">확인</button><span class="hint" id="wmsg">선생님 명단에 있는 반과 이름을 적어요.</span></div></section>`);
   const go=async()=>{const cls=p.querySelector('#wcls').value.trim(),name=p.querySelector('#wname').value.trim(),msg=p.querySelector('#wmsg');
@@ -749,7 +763,7 @@ function renderCert(ex,pr){
   const N=ex.hashes.length,att=pr.attempts,pad2=k=>String(k).padStart(2,'0');
   const firstScore=Math.round((N-att[0].w.length)/N*100);
   const dd=new Date(pr.done),dateTxt=`${dd.getFullYear()}/${pad2(dd.getMonth()+1)}/${pad2(dd.getDate())}`;
-  const me=prog._me||{},g=gradeOf(me.cls);
+  const me=prog._me||{},g=me.grade||gradeOf(me.cls);
   const fixedAt=q=>{let last=-1;att.forEach((a,i)=>{if(a.w.includes(q))last=i});return last+2};  /* 몇 차에 맞혔는지 */
   /* 회차별 정답률 꺾은선 */
   const pts=att.map(a=>Math.round((N-a.w.length)/N*100));
